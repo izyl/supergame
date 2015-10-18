@@ -4,6 +4,9 @@ require("ui/loaders/ColladaLoader.js");
 require("ui/Gyroscope");
 require("ui/controls/TrackballControls.js");
 
+// reseau
+var socket = require('socket.io-client')();
+
 var css = require('main.css');
 
 var Main = (function () {
@@ -110,6 +113,18 @@ var Main = (function () {
         $container.append(renderer.domElement);
     }
 
+    function initNetwork() {
+        socket.emit('new player', "");
+
+        socket.on('new game', function (game) {
+            console.log('new game');
+        });
+
+        socket.on('server:new player', function (msg) {
+            console.log(msg);
+        });
+    }
+
     function init() {
 
 
@@ -118,6 +133,8 @@ var Main = (function () {
         addMap();
         addPlayer();
         addLigth();
+
+        initNetwork();
 
         //stats = new Stats();
         //container.appendChild(stats.domElement);
@@ -129,6 +146,8 @@ var Main = (function () {
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
+
+
     };
 })();
 
