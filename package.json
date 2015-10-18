@@ -1,0 +1,46 @@
+{
+  "name": "supergame",
+  "version": "1.0.0",
+  "description": "the super game",
+  "main": "server/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "izyl",
+  "license": "ISC",
+  "devDependencies": {
+    "browserify": "^11.2.0",
+    "browserify-css": "^0.7.1",
+    "browserify-shim": "^3.8.10",
+    "gulp": "^3.9.0",
+    "gulp-clean": "^0.3.1",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-util": "^3.0.6",
+    "lodash.assign": "^3.2.0",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "watchify": "^3.4.0"
+  },
+  "browser": {
+    "THREE": "./node_modules/three.js/build/three.js"
+  },
+  "browserify": {
+    "transform": [
+      "browserify-shim"
+    ]
+  },
+  "browserify-shim": {
+    "three": "global:THREE"
+  },
+  "browserify-css": {
+    "autoInject": true,
+    "minify": true,
+    "rootDir": "./app/css"
+  },
+  "dependencies": {
+    "express": "^4.13.3",
+    "jquery": "^2.1.4",
+    "path": "^0.12.7",
+    "three.js": "^0.73.0"
+  }
+}
