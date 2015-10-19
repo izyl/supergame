@@ -32,10 +32,11 @@ var Main = (function () {
     var camera;
     var scene;
     var loader;
-    var lights = [];
     var cameraControls;
 
+    var light;
     var character;
+    var players = [];
 
     init();
     animate();
@@ -53,20 +54,12 @@ var Main = (function () {
 
     function addLigth() {
 
-        scene.add(new THREE.AmbientLight(0x222222));
-
-        var light = new THREE.DirectionalLight(0x999999);
-        light.position.set(10, 10, -10);
-        scene.add(light);
-
+        scene.add(new THREE.AmbientLight(0x777777));
+        light = new THREE.DirectionalLight(0xffffff, 0.5);
+        light.position.set(-100, 200, 100);
     }
 
-    function addPlayer() {
-        // set up the sphere vars
-
-        cameraControls = new THREE.TrackballControls(camera, renderer.domElement);
-        cameraControls.target.set(2, 2, 2);
-
+    function createCharacter() {
         // CHARACTER
         var stickmanCfg = {
 
@@ -87,7 +80,7 @@ var Main = (function () {
         };
 
 
-        character = new THREE.MD2CharacterComplex();
+        var character = new THREE.MD2CharacterComplex();
         character.scale = 3;
         character.controls = cameraControls;
         character.loadParts(stickmanCfg);
@@ -97,16 +90,20 @@ var Main = (function () {
 
         scene.add(character.root);
 
+        return character;
+    };
 
-        var light = new THREE.DirectionalLight(0xffffff, 0.5);
-        light.position.set(-100, 200, 100);
+    function addPlayer() {
+        // set up the sphere vars
 
+        cameraControls = new THREE.TrackballControls(camera, renderer.domElement);
+        cameraControls.target.set(2, 2, 2);
+
+        character = createCharacter();
         var gyro = new THREE.Gyroscope();
         gyro.add(camera);
         gyro.add(light, light.target);
         character.root.add(gyro);
-
-
     };
 
     function initColladaLoader() {
@@ -149,6 +146,13 @@ var Main = (function () {
 
         socket.on('server:new player', function (msg) {
             console.log(msg);
+            players.push(createCharacter());
+        });
+
+        socket.on('server:player move', function (delta, controls) {
+            console.log(delta);
+            if (players.length > 0)
+                players[0].updateFromData(delta, controls);
         });
     }
 
@@ -158,8 +162,8 @@ var Main = (function () {
         initWorld();
         initColladaLoader();
         addMap();
-        addPlayer();
         addLigth();
+        addPlayer();
         initNetwork();
 
         //stats = new Stats();
@@ -299,6 +303,9 @@ var Main = (function () {
     function update() {
         var delta = clock.getDelta();
         character.update(delta);
+
+        socket.emit('player move', delta, character.controls);
+
         cameraControls.update(delta);
     };
 })();

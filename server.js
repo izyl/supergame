@@ -28,6 +28,11 @@ io.on('connection', function (socket) {
         console.log('user disconnected');
     });
 
+    socket.on('player move', function (delta, controls) {
+        console.log('player move: ', delta, controls);
+        socket.broadcast.emit('server:player move', delta, controls);
+    });
+
     socket.on('chat message', function (msg) {
         console.log('message: ' + msg);
         socket.broadcast.emit('chat message', msg);

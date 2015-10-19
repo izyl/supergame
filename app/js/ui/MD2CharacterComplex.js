@@ -251,8 +251,11 @@ THREE.MD2CharacterComplex = function () {
             this.meshWeapon.playAnimation(animationName);
 
         }
+    };
 
-
+    this.updateFromData = function(delta, controls){
+        this.controls = controls;
+        this.update(delta);
     };
 
     this.update = function (delta) {
@@ -265,7 +268,6 @@ THREE.MD2CharacterComplex = function () {
             this.updateAnimations(delta);
 
         }
-
     };
 
     this.updateAnimations = function (delta) {
