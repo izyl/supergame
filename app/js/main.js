@@ -1,12 +1,12 @@
 var $ = require("jQuery");
 var THREE = require("THREE");
-require("ui/loaders/ColladaLoader.js");
+require("ui/loaders/ColladaLoader");
 require("ui/Gyroscope");
-require("ui/controls/TrackballControls.js");
+require("ui/controls/TrackballControls");
+require("ui/MD2CharacterComplex");
 
 // reseau
 var socket = require('socket.io-client')();
-
 var css = require('main.css');
 
 var Main = (function () {
@@ -21,11 +21,21 @@ var Main = (function () {
 
     // WebGL renderer, camera and a scene
     var renderer;
+    var clock;
+
+    var nextGameTick = (new Date).getTime();
+    var fps = 30;
+    var max_frame_skip = 10;
+    var skip_ticks = 1000 / fps;
+
+
     var camera;
     var scene;
     var loader;
     var lights = [];
     var cameraControls;
+
+    var character;
 
     init();
     animate();
@@ -54,14 +64,39 @@ var Main = (function () {
     function addPlayer() {
         // set up the sphere vars
 
-        loader.load('models/character/stickman.dae', function (collada) {
-            //dummy1.dae
-            var dae = collada.scene;
-            var skin = collada.skins[0];
-            dae.position.set(1, 2, 0);//x,z,y- if you think in blender dimensions ;)
+        cameraControls = new THREE.TrackballControls(camera, renderer.domElement);
+        cameraControls.target.set(2, 2, 2);
 
-            scene.add(dae);
-        });
+        // CHARACTER
+        var stickmanCfg = {
+
+            baseUrl: "models/character/",
+
+            body: "stickman.json",
+            skins: ["stickman.png"],
+            weapons: [],
+            animations: {
+                move: "run",
+                idle: "stand",
+                jump: "jump",
+                attack: "attack",
+                crouchMove: "cwalk",
+                crouchIdle: "cstand",
+                crouchAttach: "crattack"
+            }
+        };
+
+
+        character = new THREE.MD2CharacterComplex();
+        character.scale = 3;
+        character.controls = cameraControls;
+        character.loadParts(stickmanCfg);
+        character.enableShadows(true);
+        character.setWeapon(0);
+        character.setSkin(0);
+
+        scene.add(character.root);
+
 
         var light = new THREE.DirectionalLight(0xffffff, 0.5);
         light.position.set(-100, 200, 100);
@@ -69,10 +104,8 @@ var Main = (function () {
         var gyro = new THREE.Gyroscope();
         gyro.add(camera);
         gyro.add(light, light.target);
-        scene.add(gyro);
+        character.root.add(gyro);
 
-        cameraControls = new THREE.TrackballControls(camera, renderer.domElement);
-        cameraControls.target.set(2, 2, 2);
 
     };
 
@@ -82,13 +115,6 @@ var Main = (function () {
         loader.options.convertUpAxis = true;
     };
 
-
-    function animate() {
-        requestAnimationFrame(animate);
-        renderer.render(scene, camera);
-        cameraControls.update();
-    }
-
     function initWorld() {
         scene = new THREE.Scene();
         renderer = new THREE.WebGLRenderer({
@@ -96,6 +122,7 @@ var Main = (function () {
             clearAlpha: 1,
             clearColor: 0xccdddd
         });
+        clock = new THREE.Clock();
         renderer.setSize(window.innerWidth, window.innerHeight);
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 40000);
         camera.position.set(0, 20, 20);
@@ -133,21 +160,146 @@ var Main = (function () {
         addMap();
         addPlayer();
         addLigth();
-
         initNetwork();
 
         //stats = new Stats();
         //container.appendChild(stats.domElement);
 
-        // draw!
-        renderer.render(scene, camera);
-
         window.addEventListener('resize', function () {
+            viewportWidth = window.innerWidth;
+            viewportHeight = window.innerHeight;
+            renderer.setSize(viewportWidth, viewportHeight);
+            camera.aspect = viewportWidth / viewportHeight;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
+        document.addEventListener('keydown', onKeyDown, false);
+        document.addEventListener('keyup', onKeyUp, false);
 
+    };
+
+    // TODO : Faire Différentes classes pour les controls (clavier, souris), Un InputController (pouvoir changer le mode de control)
+    function onKeyDown(event) {
+
+        var controls = character.controls;
+
+        console.log(event);
+
+        switch (event.keyCode) {
+
+            case 38: /* up */
+            case 87: /* W querty wsad */
+            case 90: /* Z azert zsqd */
+
+                controls.moveForward = true;
+                break;
+
+            case 40: /* down */
+            case 83: /* S */
+                controls.moveBackward = true;
+                break;
+
+            case 37: /* left */
+            case 65: /* A */
+            case 81: /* Q */
+                controls.moveLeft = true;
+                break;
+
+            case 39: /* right */
+            case 68: /* D */
+                controls.moveRight = true;
+                break;
+
+            case 67: /* C */
+                controls.crouch = true;
+                break;
+            case 32: /* space */
+                controls.jump = true;
+                break;
+            case 17: /* ctrl */
+                controls.attack = true;
+                break;
+
+        }
+
+    };
+
+    function onKeyUp(event) {
+
+        var controls = character.controls;
+
+        switch (event.keyCode) {
+
+            case 38: /* up */
+            case 87: /* W querty wsad */
+            case 90: /* Z azert zsqd */
+
+                controls.moveForward = false;
+                break;
+
+            case 40: /* down */
+            case 83: /* S */
+                controls.moveBackward = false;
+                break;
+
+            case 37: /* left */
+            case 65: /* A */
+            case 81: /* Q */
+                controls.moveLeft = false;
+                break;
+
+            case 39: /* right */
+            case 68: /* D */
+                controls.moveRight = false;
+                break;
+
+            case 67: /* C */
+                controls.crouch = false;
+                break;
+            case 32: /* space */
+                controls.jump = false;
+                break;
+            case 17: /* ctrl */
+                controls.attack = false;
+                break;
+
+        }
+
+    };
+
+    function animate() {
+        requestAnimationFrame(animate);
+        render();
+        update();
+    };
+
+    function render() {
+        loops = 0;
+
+        // Attempt to update as many times as possible to get to our nextGameTick 'timeslot'
+        // However, we only can update up to 10 times per frame
+        while ((new Date).getTime() > nextGameTick && loops < max_frame_skip) {
+            update();
+            nextGameTick += skip_ticks;
+            loops++;
+        }
+
+        /*
+         * If we fall really far behind in updates then we need to set nextGameTick to the current time to prevent the situation where nextGameTick is so
+         * far ahead of our current update that we start running updates extremely fast
+         */
+        if (loops === max_frame_skip) {
+            nextGameTick = (new Date).getTime();
+        }
+
+        renderer.render(scene, camera);
+    }
+
+
+    function update() {
+        var delta = clock.getDelta();
+        character.update(delta);
+        cameraControls.update(delta);
     };
 })();
 
