@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="jambonsVsZombies">
 <head>
     <meta charset="utf-8">
     <title>The supergame</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-<div id="container"></div>
+
+<div ng-include="'views/nav.html'"></div>
+<div id="container" class="container" ng-view></div>
 <script type="text/javascript" src="supergame.js"></script>
 </body>
 </html>

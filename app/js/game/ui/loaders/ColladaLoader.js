@@ -2,7 +2,7 @@
  * @author Tim Knip / http://www.floorplanner.com/ / tim at floorplanner.com
  * @author Tony Parisi / http://www.tonyparisi.com/
  */
-var THREE = require("three.js");
+var THREE = require("THREE");
 var COLLADA = null;
 var scene = null;
 var visualScene;

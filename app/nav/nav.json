@@ -1,0 +1,15 @@
+[
+  {
+    "name": "Jambon vs Zombies",
+    "href": "#",
+    "class": "navbar-brand"
+  },
+  {
+    "name": "Chat",
+    "href": "#/chat"
+  },
+  {
+    "name": "Game",
+    "href": "#/game"
+  }
+]

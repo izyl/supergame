@@ -7,6 +7,8 @@ var path = require('path');
 /* Config du server express                */
 /*******************************************/
 app.use(express.static(__dirname + '/dist'));
+
+
 app.get('/', function (req, res) {
     res.sendFile(path.join(__dirname + '/dist/index.html'));
 });
@@ -29,7 +31,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('player move', function (delta, controls) {
-        console.log('player move: ', delta, controls);
+        //console.log('player move: ', delta, controls);
         socket.broadcast.emit('server:player move', delta, controls);
     });
 

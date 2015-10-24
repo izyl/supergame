@@ -2,7 +2,7 @@
  * @author alteredq / http://alteredqualia.com/
  */
 var THREE = require("THREE");
-require("ui/loaders/ColladaLoader");
+require("game/ui/loaders/ColladaLoader");
 
 THREE.MD2CharacterComplex = function () {
 

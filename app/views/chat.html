@@ -1,0 +1,92 @@
+<h1>{{'Chat'}}</h1>
+
+<div class="container" ng-controller="ChatCtrl">
+    <div class="row">
+        <div class="col-md-11">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+
+                    <div class="row">
+
+                        <div class="col-lg-1">
+                            <span class="glyphicon glyphicon-comment"></span> Chat
+                        </div>
+
+                        <div class="col-lg-1 pull-right">
+                            <!-- /input-group -->
+                            <div class="input-group">
+                                <div class="btn-group-xs">
+                                    <button type="button" class="btn btn-default dropdown-toggle"
+                                            data-toggle="dropdown">
+                                        <span class="glyphicon glyphicon-option-horizontal"></span>
+                                    </button>
+
+                                    <ul class="dropdown-menu slidedown">
+                                        <li ng-click="refresh()">
+                                            <a href="">
+                                                <span class="glyphicon glyphicon-refresh"></span>Refresh
+                                            </a>
+                                        </li>
+                                        <li ng-click="setStatus('available')">
+                                            <a href="">
+                                                <span class="glyphicon glyphicon-ok-sign"></span>Available
+                                            </a>
+                                        </li>
+                                        <li ng-click="setStatus('busy')">
+                                            <a href="">
+                                                <span class="glyphicon glyphicon-remove"></span>Busy
+                                            </a>
+                                        </li>
+                                        <li ng-click="setStatus('afk')">
+                                            <a href="">
+                                                <span class="glyphicon glyphicon-time"></span>Away
+                                            </a>
+                                        </li>
+                                        <li class="divider"></li>
+                                        <li ng-click="logout()">
+                                            <a href="">
+                                                <span class="glyphicon glyphicon-off"></span>Sign Out
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <ul class="chat">
+                        <li ng-repeat="item in items" class="left clearfix">
+                            <span class="chat-img pull-left">
+                                <img src="http://placehold.it/50/55C1E7/fff&text=U" alt="User Avatar"
+                                     class="img-circle"/>
+                            </span>
+
+                            <div class="chat-body clearfix">
+                                <div class="header">
+                                    <strong class="primary-font">{{item.author}}</strong>
+                                    <small class="pull-right text-muted">
+                                        <span class="glyphicon glyphicon-time">{{item.timestamp}}</span>
+                                    </small>
+                                </div>
+                                <p>{{item.text}}</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="btn-input" ng-model="text" name="text" type="text" class="form-control input-sm"
+                               placeholder="Type your message here..."/>
+                        <span class="input-group-btn">
+                            <button class="btn btn-warning btn-sm" id="btn-chat" ng-click="sendMessage()">
+                                Send
+                            </button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

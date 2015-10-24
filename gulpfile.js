@@ -17,7 +17,7 @@ var srcDir = "app/";
 // add custom browserify options here
 var customOpts = {
 
-    entries: [srcDir + "js/main.js"],
+    entries: [srcDir + "js/app.js"],
     paths: [srcDir + "js", srcDir + "css"],
 
     debug: true // genere sourceMappingURL=bundle.js.map : permet le mapping des sources pour le debugging
@@ -25,18 +25,21 @@ var customOpts = {
 var opts = assign({}, watchify.args, customOpts);
 gulp.task("default", ["js", "resources"]);
 
-gulp.watch([srcDir + "models/**/*",srcDir + "css/**/*", srcDir + "index.html"], ["resources"]);
+gulp.watch([srcDir + "models/**/*", srcDir + "css/**/*", srcDir + "index.html", srcDir + "nav/**/*", srcDir + "views/**/*"], ["resources"]);
 gulp.task("resources", resources);
 function resources() {
 
-    gulp.src([srcDir + "css/**/*"])
-        // Will be put in the [buildDir]/css folder
-        .pipe(gulp.dest(buildDir + "css/"));
-
     gulp.src([srcDir + "models/**/*"])
-        // Will be put in the [buildDir]/css folder
         .pipe(gulp.dest(buildDir + "models/"));
 
+    gulp.src(["node_modules/bootstrap/dist/fonts/**/*"])
+        .pipe(gulp.dest(buildDir + "fonts/"));
+
+    gulp.src([srcDir + "nav/**/*"])
+        .pipe(gulp.dest(buildDir + "nav/"));
+
+    gulp.src([srcDir + "views/**/*"])
+        .pipe(gulp.dest(buildDir + "views/"));
 
     gulp.src(srcDir + "index.html")
         .pipe(gulp.dest(buildDir));
@@ -45,24 +48,16 @@ function resources() {
 gulp.task("js", bundle); // so you can run `gulp` to build the file
 function bundle() {
 
-    var b = watchify(browserify(opts));
+    //gutil.log(opts);
+    var b = watchify(browserify([], opts));
     b.on("update", bundle); // on any dep update, runs the bundler
     b.on("log", gutil.log); // output build logs to terminal
-    /*
-     * Ici on exporte les librairies pour qu"elles soient disponibles
-     * dans la page appelante sous l"alias [:expose]
-     * */
-
-    b.transform('browserify-css', {
+    b.transform(browserifyCss, {
         global: true,
-        "autoInject": true,
-        "minify": false,
-        "rootDir": srcDir,
-        processRelativeUrl: function (relativeUrl) {
-            return relativeUrl;
-        }
-    });
+        "rootDir": "node_modules",
 
+        rebaseUrls : false
+    });
     return b.bundle()
         // log errors if they happen
         .on("error", gutil.log.bind(gutil, "Browserify Error"))

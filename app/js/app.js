@@ -1,0 +1,42 @@
+/* App Module */
+require("app.css");
+require("bootstrap/dist/css/bootstrap.css");
+var bootstrap = require('bootstrap');
+var angular = require('angular');
+var lodash = require('lodash');
+var route = require('angular-route');
+var animate = require('angular-animate');
+
+var ChatCtrl = require('controllers/ChatCtrl');
+var GameCtrl = require('controllers/GameCtrl');
+var NavCtrl = require('controllers/NavCtrl');
+
+angular.module('jambonsVsZombies', ['ngRoute', 'ngAnimate'])
+
+    .config([
+        '$locationProvider',
+        '$routeProvider',
+        function ($locationProvider, $routeProvider) {
+            $routeProvider.
+                when('/chat', {
+                    templateUrl: 'views/chat.html',
+                    controller: ChatCtrl
+                }).
+                when('/game', {
+                    templateUrl: 'views/game.html',
+                    controller: GameCtrl
+                }).
+                otherwise({
+                    controller: NavCtrl
+                });
+        }
+    ])
+    //Load controller
+    .controller('RootCtrl', []).run(function ($rootScope) {
+        $rootScope.user = {
+            name: 'anonymous'
+        };
+    })
+    .controller('GameCtrl', ['$scope', GameCtrl])
+    .controller('ChatCtrl', ['$scope', ChatCtrl])
+    .controller('NavCtrl', ['$scope', '$location', '$http', NavCtrl]);

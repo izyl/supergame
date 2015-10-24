@@ -1,7 +1,7 @@
 /**
  * @author alteredq / http://alteredqualia.com/
  */
-var THREE = require("three.js");
+var THREE = require("THREE");
 THREE.Gyroscope = function () {
 
 	THREE.Object3D.call( this );
