@@ -1,14 +1,12 @@
 var socket = require('socket.io-client')();
-var Game = require("game/game");
-var game;
 
-var GameCtrl = function ($scope) {
+var GameCtrl = function ($scope, GameService) {
 
-    if(!game) {
-        game = Game();
-    }
+    var game = GameService.getGame();
+    game.restore();
 
-    $scope.game = {
+    console.log(game);
+    $scope.gameData = {
         id: -1,
         player: {
             name: $scope.user.name,
@@ -16,8 +14,8 @@ var GameCtrl = function ($scope) {
         }
     };
 
-    socket.on('new game', function (game) {
-        $scope.game = game;
+    socket.on('new game', function (gameData) {
+        $scope.gameData = gameData;
         $scope.$apply();
     });
 };

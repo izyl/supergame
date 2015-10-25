@@ -129,7 +129,7 @@ THREE.ColladaLoader.prototype = {
         geometries = this.parseLib("library_geometries geometry", Geometry, "geometry");
         cameras = this.parseLib("library_cameras camera", Camera, "camera");
         lights = this.parseLib("library_lights light", Light, "light");
-        controllers = this.parseLib("library_controllers controller", Controller, "controller");
+        controllers = this.parseLib("library_controllers controllers", Controller, "controller");
         animations = this.parseLib("library_animations animation", Animation, "animation");
         visualScenes = this.parseLib("library_visual_scenes visual_scene", VisualScene, "visual_scene");
         kinematicsModels = this.parseLib("library_kinematics_models kinematics_model", KinematicsModel, "kinematics_model");
@@ -356,7 +356,7 @@ THREE.ColladaLoader.prototype = {
 
         if (!morphCtrl || !morphCtrl.morph) {
 
-            console.log("could not find morph controller!");
+            console.log("could not find morph controllers!");
             return;
 
         }
@@ -394,7 +394,7 @@ THREE.ColladaLoader.prototype = {
 
         if (!skinCtrl || !skinCtrl.skin) {
 
-            console.log("could not find skin controller!");
+            console.log("could not find skin controllers!");
             return;
 
         }
@@ -4320,7 +4320,7 @@ function applySkin(geometry, instanceCtrl, frame) {
 
     if (!skinController || !skinController.skin) {
 
-        console.log('ColladaLoader: Could not find skin controller.');
+        console.log('ColladaLoader: Could not find skin controllers.');
         return;
 
     }
@@ -4523,7 +4523,7 @@ function createSceneGraph(node, parent) {
 
                 } else if (controllers[controller.skin.source]) {
 
-                    // urgh: controller can be chained
+                    // urgh: controllers can be chained
                     // handle the most basic case...
 
                     var second = controllers[controller.skin.source];
@@ -4559,7 +4559,7 @@ function createSceneGraph(node, parent) {
 
                 }
 
-                console.log('ColladaLoader: Morph-controller partially supported.');
+                console.log('ColladaLoader: Morph-controllers partially supported.');
 
             default:
                 break;
