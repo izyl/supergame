@@ -1,17 +1,19 @@
-var _= require('lodash');
+var _ = require('lodash');
 
 var NavCtrl = function ($scope, $location, $http) {
 
     var current;
-    $http.get('nav/nav.json').success(function (data) {
-        console.log(data);
 
-        var index = _.findIndex(data, {'name': 'Chat'});
-        if (index >= 0) {
-            current = data[index];
-            current.active = 'active';
-        }
+    $http.get('nav/nav.json').success(function (data) {
         $scope.items = data;
+
+        var path = "#" + $location.path();
+        var res = _.find($scope.items, {'href': path});
+
+        if (!res) {
+            res = _.find($scope.items, {'href': '#/home'});
+        }
+        $scope.openLink(res);
     });
 
     $scope.openLink = function (item) {
@@ -19,7 +21,7 @@ var NavCtrl = function ($scope, $location, $http) {
             current.active = '';
         current = item;
         current.active = 'active';
-    }
+    };
 };
 
 module.exports = NavCtrl;

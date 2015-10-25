@@ -18,16 +18,20 @@ angular.module('jambonsVsZombies', ['ngRoute', 'ngAnimate'])
         '$routeProvider',
         function ($locationProvider, $routeProvider) {
             $routeProvider.
-                when('/chat', {
-                    templateUrl: 'views/chat.html',
+                when('/home', {
+                    templateUrl: 'views/home.html',
                     controller: ChatCtrl
                 }).
                 when('/game', {
                     templateUrl: 'views/game.html',
                     controller: GameCtrl
                 }).
+                when('/chat', {
+                    templateUrl: 'views/chat.html',
+                    controller: ChatCtrl
+                }).
                 otherwise({
-                    controller: NavCtrl
+                    redirectTo: '/home'
                 });
         }
     ])

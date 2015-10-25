@@ -32,6 +32,9 @@ function resources() {
     gulp.src([srcDir + "models/**/*"])
         .pipe(gulp.dest(buildDir + "models/"));
 
+    gulp.src([srcDir + "img/**/*"])
+        .pipe(gulp.dest(buildDir + "img/"));
+
     gulp.src(["node_modules/bootstrap/dist/fonts/**/*"])
         .pipe(gulp.dest(buildDir + "fonts/"));
 
