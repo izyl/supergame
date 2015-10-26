@@ -58,7 +58,6 @@ function bundle() {
     b.transform(browserifyCss, {
         global: true,
         "rootDir": "node_modules",
-
         rebaseUrls : false
     });
     return b.bundle()

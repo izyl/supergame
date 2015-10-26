@@ -12,7 +12,7 @@ THREE.MD2CharacterComplex = function () {
 
     // animation parameters
 
-    this.animationFPS = 6;
+    this.animationFPS = 15;
     this.transitionFrames = 15;
 
     // movement model parameters
@@ -72,13 +72,13 @@ THREE.MD2CharacterComplex = function () {
 
     this.controls = {
 
-        moveForward : false,
-        moveBackward : false,
-        moveLeft : false,
-        moveRight : false,
-        crouch : false,
-        jump : false,
-        attack : false
+        moveForward: false,
+        moveBackward: false,
+        moveLeft: false,
+        moveRight: false,
+        crouch: false,
+        jump: false,
+        attack: false
     };
 
     // API
@@ -253,7 +253,7 @@ THREE.MD2CharacterComplex = function () {
         }
     };
 
-    this.updateFromData = function(delta, controls){
+    this.updateFromData = function (delta, controls) {
         this.controls = controls;
         this.update(delta);
     };
@@ -493,30 +493,28 @@ THREE.MD2CharacterComplex = function () {
     }
 
     function createPart(geometry, skinMap) {
-
-        var materialWireframe = new THREE.MeshLambertMaterial({
-            color: 0xffaa00,
-            wireframe: true,
-            morphTargets: true,
-            morphNormals: true
-        });
-        var materialTexture = new THREE.MeshLambertMaterial({
-            color: 0xffffff,
-            wireframe: false,
-            map: skinMap,
-            morphTargets: true,
-            morphNormals: true
+        var materialTexture = new THREE.MeshPhongMaterial({
+            shading: THREE.FlatShading,
+            morphTargets: true
         });
 
         //
+        /*// MATERIALS
+         var materialColor = new THREE.Color();
+         materialColor.setRGB(1.0, 0.8, 0.6);
 
+         phongMaterial = createShaderMaterial("phongDiffuse", light);
+         phongMaterial.uniforms.uMaterialColor.value.copy(materialColor);
+         phongMaterial.side = THREE.DoubleSide;
+
+         teapot = new THREE.Mesh(
+         new THREE.TeapotGeometry(teapotSize, 20, true, true, true, true), phongMaterial);*/
         var mesh = new THREE.MorphBlendMesh(geometry, materialTexture);
         mesh.rotation.y = -Math.PI / 2;
 
         //
 
         mesh.materialTexture = materialTexture;
-        mesh.materialWireframe = materialWireframe;
 
         //
 
