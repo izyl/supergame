@@ -8,11 +8,11 @@ THREE.MD2CharacterComplex = function () {
 
     var scope = this;
 
-    this.scale = 1;
+    this.scale = 0.7;
 
     // animation parameters
 
-    this.animationFPS = 15;
+    this.animationFPS = 20;
     this.transitionFrames = 15;
 
     // movement model parameters
