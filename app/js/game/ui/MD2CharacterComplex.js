@@ -8,7 +8,7 @@ THREE.MD2CharacterComplex = function () {
 
     var scope = this;
 
-    this.scale = 0.7;
+    this.scale = 1;
 
     // animation parameters
 

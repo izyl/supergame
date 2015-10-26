@@ -65,7 +65,7 @@ var Game = function () {
 
             baseUrl: "models/character/",
 
-            body: "stickman.json",
+            body: "sprinter.json",
             skins: ["stickman.png"],
             weapons: [],
             animations: {
