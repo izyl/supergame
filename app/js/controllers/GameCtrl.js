@@ -4,8 +4,6 @@ var GameCtrl = function ($scope, GameService) {
 
     var game = GameService.getGame();
     game.restore();
-
-    console.log(game);
     $scope.gameData = {
         id: -1,
         player: {

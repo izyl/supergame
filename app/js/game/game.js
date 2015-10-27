@@ -65,7 +65,7 @@ var Game = function () {
 
             baseUrl: "models/character/",
 
-            body: "sprinter.json",
+            body: "stickman.json",
             skins: ["stickman.png"],
             weapons: [],
             animations: {
@@ -94,7 +94,6 @@ var Game = function () {
     };
 
     function addPlayer() {
-        // set up the sphere vars
 
         cameraControls = new THREE.TrackballControls(camera, renderer.domElement);
         cameraControls.target.set(2, 2, 2);
