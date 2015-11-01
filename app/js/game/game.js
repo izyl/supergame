@@ -2,7 +2,7 @@ var $ = require("jQuery");
 var THREE = require("THREE");
 require("game/loaders/ColladaLoader");
 require("game/Gyroscope");
-require("game/controls/TrackballControls");
+require("game/controls/OrbitControls");
 require("game/Character");
 var KeyboardControls = require("game/controls/KeyboardControls");
 
@@ -85,7 +85,6 @@ var Game = function () {
         character.enableShadows(true);
         character.setWeapon(0);
         character.setSkin(0);
-        character.controls = new KeyboardControls(character);
         scene.add(character.root);
 
         return character;
@@ -93,18 +92,16 @@ var Game = function () {
 
     function addPlayer() {
 
-        cameraControls = new THREE.TrackballControls(camera, renderer.domElement);
-        cameraControls.target.set(2, 2, 2);
-
         character = createCharacter();
-        var gyro = new THREE.Gyroscope();
-        gyro.add(camera);
-        //gyro.add(light, light.target);
-        character.root.add(gyro);
+        character.controls = new KeyboardControls(character);
+        //var gyro = new THREE.Gyroscope();
+        //gyro.position.set(0,1,0);
+        //gyro.add(camera);
+        //character.root.add(gyro);
+
     };
 
     function initColladaLoader() {
-
         loader = new THREE.ColladaLoader();
         loader.options.convertUpAxis = true;
     };
@@ -123,6 +120,19 @@ var Game = function () {
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 40000);
         camera.position.set(0, 20, 20);
         scene.add(camera);
+        cameraControls = new THREE.OrbitControls(camera,renderer.domElement);
+        cameraControls.zoomSpeed = 1.2;
+        cameraControls.panSpeed = 0.01;
+
+        cameraControls.noZoom = false;
+        cameraControls.noPan = false;
+        cameraControls.noRotate = true;
+
+        cameraControls.staticMoving = true;
+        cameraControls.dynamicDampingFactor = 0.3;
+
+        cameraControls.keys = [ 65, 83, 68 ];
+
 
         window.addEventListener('resize', function () {
             viewportWidth = $container.width();
@@ -130,6 +140,7 @@ var Game = function () {
             renderer.setSize(viewportWidth, viewportHeight);
             camera.aspect = viewportWidth / viewportHeight;
             camera.updateProjectionMatrix();
+            cameraControls.handleResize();
         });
     };
 
