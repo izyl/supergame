@@ -1,9 +1,10 @@
 var $ = require("jQuery");
 var THREE = require("THREE");
-require("game/ui/loaders/ColladaLoader");
-require("game/ui/Gyroscope");
-require("game/ui/controls/TrackballControls");
-require("game/ui/MD2CharacterComplex");
+require("game/loaders/ColladaLoader");
+require("game/Gyroscope");
+require("game/controls/TrackballControls");
+require("game/Character");
+var KeyboardControls = require("game/controls/KeyboardControls");
 
 // reseau
 var socket = require('socket.io-client')();
@@ -62,7 +63,6 @@ var Game = function () {
     function createCharacter() {
         // CHARACTER
         var stickmanCfg = {
-
             baseUrl: "models/character/",
 
             body: "stickman.json",
@@ -79,15 +79,13 @@ var Game = function () {
             }
         };
 
-
-        var character = new THREE.MD2CharacterComplex();
+        var character = new Character();
         character.scale = 3;
-        character.controls = cameraControls;
         character.loadParts(stickmanCfg);
         character.enableShadows(true);
         character.setWeapon(0);
         character.setSkin(0);
-
+        character.controls = new KeyboardControls(character);
         scene.add(character.root);
 
         return character;
@@ -122,7 +120,6 @@ var Game = function () {
         });
 
         clock = new THREE.Clock();
-
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 40000);
         camera.position.set(0, 20, 20);
         scene.add(camera);
@@ -134,10 +131,6 @@ var Game = function () {
             camera.aspect = viewportWidth / viewportHeight;
             camera.updateProjectionMatrix();
         });
-
-        document.addEventListener('keydown', onKeyDown, false);
-        document.addEventListener('keyup', onKeyUp, false);
-
     };
 
     this.restore = function() {
@@ -180,95 +173,6 @@ var Game = function () {
 
     };
 
-    // TODO : Faire Différentes classes pour les controls (clavier, souris), Un InputController (pouvoir changer le mode de control)
-    function onKeyDown(event) {
-
-        var controls = character.controls;
-
-        console.log(event);
-
-        switch (event.keyCode) {
-
-            case 38: /* up */
-            case 87: /* W querty wsad */
-            case 90: /* Z azert zsqd */
-
-                controls.moveForward = true;
-                break;
-
-            case 40: /* down */
-            case 83: /* S */
-                controls.moveBackward = true;
-                break;
-
-            case 37: /* left */
-            case 65: /* A */
-            case 81: /* Q */
-                controls.moveLeft = true;
-                break;
-
-            case 39: /* right */
-            case 68: /* D */
-                controls.moveRight = true;
-                break;
-
-            case 67: /* C */
-                controls.crouch = true;
-                break;
-            case 32: /* space */
-                controls.jump = true;
-                break;
-            case 17: /* ctrl */
-                controls.attack = true;
-                break;
-
-        }
-
-    };
-
-    function onKeyUp(event) {
-
-        var controls = character.controls;
-
-        switch (event.keyCode) {
-
-            case 38: /* up */
-            case 87: /* W querty wsad */
-            case 90: /* Z azert zsqd */
-
-                controls.moveForward = false;
-                break;
-
-            case 40: /* down */
-            case 83: /* S */
-                controls.moveBackward = false;
-                break;
-
-            case 37: /* left */
-            case 65: /* A */
-            case 81: /* Q */
-                controls.moveLeft = false;
-                break;
-
-            case 39: /* right */
-            case 68: /* D */
-                controls.moveRight = false;
-                break;
-
-            case 67: /* C */
-                controls.crouch = false;
-                break;
-            case 32: /* space */
-                controls.jump = false;
-                break;
-            case 17: /* ctrl */
-                controls.attack = false;
-                break;
-
-        }
-
-    };
-
     function animate() {
         requestAnimationFrame(animate);
         render();
@@ -301,7 +205,6 @@ var Game = function () {
     function update() {
         var delta = clock.getDelta();
         character.update(delta);
-
         socket.emit('player move', delta, character.controls);
 
         cameraControls.update(delta);
