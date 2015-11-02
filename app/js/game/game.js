@@ -5,6 +5,7 @@ require("game/Gyroscope");
 require("game/controls/OrbitControls");
 require("game/Character");
 var KeyboardControls = require("game/controls/KeyboardControls");
+var _ = require("lodash");
 
 // reseau
 var socket = require('socket.io-client')();
@@ -35,20 +36,24 @@ var Game = function () {
     var cameraControls;
 
     var light;
+    var map;
     var character;
     var players = [];
 
+    // collision
+    var rayBot = new THREE.Vector3(0, -1, 0);
+    var caster = new THREE.Raycaster();
+
     init();
-    animate();
 
     function addMap() {
         loader.load('models/map/map_1.dae', function (collada) {
             //dummy1.dae
-            var dae = collada.scene;
+            map = collada.scene;
             var skin = collada.skins[0];
-            dae.position.set(0, 0, 0);//x,z,y- if you think in blender dimensions ;)
+            map.position.set(0, 0, 0);//x,z,y- if you think in blender dimensions ;)
 
-            scene.add(dae);
+            scene.add(map);
         });
     };
 
@@ -120,18 +125,11 @@ var Game = function () {
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 40000);
         camera.position.set(0, 20, 20);
         scene.add(camera);
-        cameraControls = new THREE.OrbitControls(camera,renderer.domElement);
+        cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
         cameraControls.zoomSpeed = 1.2;
-        cameraControls.panSpeed = 0.01;
-
-        cameraControls.noZoom = false;
-        cameraControls.noPan = false;
         cameraControls.noRotate = true;
 
-        cameraControls.staticMoving = true;
-        cameraControls.dynamicDampingFactor = 0.3;
-
-        cameraControls.keys = [ 65, 83, 68 ];
+        cameraControls.keys = [65, 83, 68];
 
 
         window.addEventListener('resize', function () {
@@ -144,7 +142,7 @@ var Game = function () {
         });
     };
 
-    this.restore = function() {
+    this.restore = function () {
         var $container = $("#game-container");
 
         $container.append(renderer.domElement);
@@ -179,9 +177,9 @@ var Game = function () {
         addPlayer();
         initNetwork();
 
+        animate();
         //stats = new Stats();
         //container.appendChild(stats.domElement);
-
     };
 
     function animate() {
@@ -212,12 +210,43 @@ var Game = function () {
         renderer.render(scene, camera);
     }
 
+    function collisions() {
+
+        if (!character.meshBody) return;
+
+        // collision bot
+        var originPoint = character.root.position.clone();
+        var ray = new THREE.Vector3(0, -1, 0);
+        caster.set(originPoint, ray);
+        var collisions = caster.intersectObjects(map.children[0].children);
+        if (!_.isEmpty(collisions) && collisions[0].distance < 1) {
+            character.isOnObject = true;
+        } else {
+            character.isOnObject = false;
+        }
+
+        // collision front
+        var matrix = new THREE.Matrix4();
+        matrix.extractRotation( character.root.matrix );
+        ray = new THREE.Vector3( 0, 0, 1 );
+        ray.applyMatrix4(matrix);
+        caster.set(originPoint, ray);
+        collisions = caster.intersectObjects(map.children[0].children);
+        if (!_.isEmpty(collisions) && collisions[0].distance < 1) {
+            character.fontblock = true;
+        } else {
+            character.fontblock = false;
+        }
+    }
+
 
     function update() {
         var delta = clock.getDelta();
         character.update(delta);
         socket.emit('player move', delta, character.controls);
 
+        if (map)
+            collisions();
         cameraControls.update(delta);
     };
 };

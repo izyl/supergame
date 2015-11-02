@@ -11,38 +11,25 @@ Character = function () {
     this.scale = 1;
 
     // animation parameters
-
     this.animationFPS = 20;
     this.transitionFrames = 15;
 
     // movement model parameters
-
-    this.maxSpeed = 10;
-    this.maxReverseSpeed = -10;
-
-    this.frontAcceleration = 600;
-    this.backAcceleration = 600;
-
-    this.frontDecceleration = 600;
-
-    this.angularSpeed = 2.5;
+    this.maxSpeed = 6;
 
     // rig
-
     this.root = new THREE.Object3D();
     this.verticalVelocity = 9.8 * 100;
     this.isOnObject = true;
+    this.fontblock = false;
 
     this.meshBody = null;
     this.meshWeapon = null;
-
     this.controls = null;
 
     // skins
-
     this.skinsBody = [];
     this.skinsWeapon = [];
-
     this.weapons = [];
 
     this.currentSkin = undefined;
@@ -121,10 +108,10 @@ Character = function () {
             geo.computeBoundingBox();
             scope.root.position.y = -scope.scale * geo.boundingBox.min.y + 1;
 
-            var meshes = createPart(geo, scope.skinsBody[0]);
-            scope.root.add(meshes);
-            scope.meshBody = meshes;
-            scope.meshes.push(meshes);
+            var mesh = createPart(geo, scope.skinsBody[0]);
+            scope.root.add(mesh);
+            scope.meshBody = mesh;
+            scope.meshes.push(mesh);
 
             checkLoadingComplete();
         });
@@ -322,8 +309,6 @@ Character = function () {
 
         // orientation based on controls
         // (don't just stand while turning)
-        var dir = 1;
-
         if (controls.up) {
             this.bodyOrientation = Math.PI;
         }
@@ -357,7 +342,6 @@ Character = function () {
 
 
         // speed
-
         if (!( controls.up || controls.down || controls.right || controls.left )) {
             this.speed = 0;
         } else {
@@ -365,10 +349,14 @@ Character = function () {
         }
 
         // displacement
-        var forwardDelta = this.speed * delta;
 
-        this.root.position.x += Math.sin(this.bodyOrientation) * forwardDelta;
-        this.root.position.z += Math.cos(this.bodyOrientation) * forwardDelta;
+        if(!this.fontblock){
+
+            var forwardDelta = this.speed * delta;
+
+            this.root.position.x += Math.sin(this.bodyOrientation) * forwardDelta;
+            this.root.position.z += Math.cos(this.bodyOrientation) * forwardDelta;
+        }
 
         // steering
         this.root.rotation.y = this.bodyOrientation;
@@ -378,12 +366,13 @@ Character = function () {
         if (controls.jump) {
             this.isOnObject = false;
 
-        } else {
+        } else if (!this.isOnObject) {
             this.verticalVelocity = this.verticalVelocity * -1;
         }
 
-
-        this.root.translateY(this.verticalVelocity);
+        if (this.jump || !this.isOnObject) {
+            this.root.translateY(this.verticalVelocity);
+        }
 
         if (this.isOnObject === true) {
             this.verticalVelocity = Math.max(0, this.verticalVelocity);
@@ -391,14 +380,13 @@ Character = function () {
         }
 
 
-        if (this.root.position.y < 1) {
+        if (this.root.position.y < -1) {
 
             this.verticalVelocity = 0;
             this.root.position.y = 1;
 
             this.controls.canJump = true;
             this.isOnObject = true;
-
         }
     };
 
