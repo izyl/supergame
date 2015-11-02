@@ -8,8 +8,8 @@ SUPERGAME
 
 ###Web site : angular
 
-- [] Menus bootstrap retractables avec chat et preferences
-- [] Preferences clavier souris
+	- [] Menus bootstrap retractables avec chat et preferences
+	- [] Preferences clavier souris
 
 
 ###Jeu

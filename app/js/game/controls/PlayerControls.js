@@ -1,4 +1,5 @@
 var _ = require("lodash");
+var THREE = require("THREE");
 
 var KeyboardControl = function (character) {
 
@@ -16,6 +17,24 @@ var KeyboardControl = function (character) {
 
     document.addEventListener('keydown', onKeyDown, false);
     document.addEventListener('keyup', onKeyUp, false);
+    document.addEventListener('mousedown', mouseDown, false);
+    document.addEventListener('mouseup', mouseUp, false);
+
+    function mouseDown(event) {
+
+        if(event.button === THREE.MOUSE.RIGHT ){
+            controls.jump = true;
+        }
+    }
+
+    function mouseUp(event) {
+
+        if(event.button === THREE.MOUSE.RIGHT ){
+            controls.jump = false;
+        }
+    }
+
+
 
 // TODO : Faire Différentes classes pour les controls (clavier, souris), Un InputController (pouvoir changer le mode de control)
     function onKeyDown(event) {

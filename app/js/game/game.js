@@ -4,7 +4,7 @@ require("game/loaders/ColladaLoader");
 require("game/Gyroscope");
 require("game/controls/OrbitControls");
 require("game/Character");
-var KeyboardControls = require("game/controls/KeyboardControls");
+var KeyboardControls = require("game/controls/PlayerControls");
 var _ = require("lodash");
 
 // reseau
