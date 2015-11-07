@@ -19,23 +19,43 @@ app.get('/', function (req, res) {
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+var Game = require("./server/Game.js");
+var game = new Game();
+var playerCounter = 0;
+
 io.on('connection', function (socket) {
-    console.log('a user connected');
-    socket.broadcast.emit('server:new player', "a user connected");
 
     socket.on('disconnect', function () {
         console.log('user disconnected');
+        socket.broadcast.emit('server:remove player', game.getPlayer(socket.id));
+
+        game.removePlayer(socket.id);
     });
 
     socket.on('player move', function (delta, controls) {
-        //console.log('player move: ', delta, controls);
-        socket.broadcast.emit('server:player move', delta, controls);
+        console.log('player move: ', socket.id);
+        var player = game.getPlayer(socket.id);
+        console.log('player move: ', player);
+        player.controls = controls;
+        socket.broadcast.emit('server:player move', delta, player);
     });
 
     socket.on('chat message', function (msg) {
         console.log('message: ' + msg);
         socket.broadcast.emit('chat message', msg);
     });
+
+    console.log('client start game');
+
+    socket.emit("player list", game.players);
+    game.addPlayer({
+        id: socket.id,
+        count: ++playerCounter
+    });
+    socket.emit("server:start game", game.getPlayer(socket.id));
+    console.log(game.players);
+    socket.broadcast.emit('server:new player', game.getPlayer(socket.id));
+
 });
 
 

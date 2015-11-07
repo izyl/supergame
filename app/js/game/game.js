@@ -4,6 +4,7 @@ require("game/loaders/ColladaLoader");
 require("game/Gyroscope");
 require("game/controls/OrbitControls");
 require("game/Character");
+require("game/shaders/Sky");
 var KeyboardControls = require("game/controls/PlayerControls");
 var _ = require("lodash");
 
@@ -47,13 +48,26 @@ var Game = function () {
             map = collada.scene;
             map.position.set(0, 0, 0);
 
-            collada.scene.traverse( function( node ) {
-                if( node.material ) {
+            collada.scene.traverse(function (node) {
+                if (node.material) {
                     node.material.side = THREE.DoubleSide;
                 }
             });
 
             scene.add(map);
+
+            var skyShader = THREE.ShaderTypes['sky'];
+
+            var skyGeo = new THREE.SphereGeometry(200, 20, 20);
+            var skyMat = new THREE.ShaderMaterial({
+                vertexShader: skyShader.vertexShader,
+                fragmentShader: skyShader.fragmentShader,
+                uniforms: skyShader.uniforms,
+                side: THREE.BackSide
+            });
+
+            var sky = new THREE.Mesh(skyGeo, skyMat);
+            scene.add(sky);
         });
     };
 
@@ -67,7 +81,7 @@ var Game = function () {
         scene.add(light);
     }
 
-    function createCharacter() {
+    function createCharacter(player) {
         // CHARACTER
         var stickmanCfg = {
             baseUrl: "models/character/",
@@ -87,6 +101,8 @@ var Game = function () {
         };
 
         var character = new Character();
+        character.id = player.id;
+        character.name = player.name;
         character.scale = 3;
         character.loadParts(stickmanCfg);
         character.enableShadows(true);
@@ -97,12 +113,12 @@ var Game = function () {
         return character;
     };
 
-    function addPlayer() {
+    function addPlayer(player) {
 
-        character = createCharacter();
+        character = createCharacter(player);
         character.controls = new KeyboardControls(character);
         var gyro = new THREE.Gyroscope();
-        gyro.position.set(0,1,0);
+        gyro.position.set(0, 1, 0);
         gyro.add(camera);
         character.root.add(gyro);
 
@@ -126,6 +142,9 @@ var Game = function () {
         renderer.gammaInput = true;
         renderer.gammaOutput = true;
 
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.cullFace = THREE.CullFaceBack;
+
         clock = new THREE.Clock();
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 40000);
         camera.position.set(0, 20, 20);
@@ -147,7 +166,7 @@ var Game = function () {
         });
     };
 
-    this.restore = function () {
+     function restore() {
         var $container = $("#game-container");
 
         $container.append(renderer.domElement);
@@ -155,20 +174,51 @@ var Game = function () {
     };
 
     function initNetwork() {
-        socket.emit('new player', "");
+        var self = this;
+        socket.emit('new player');
 
-        socket.on('new game', function (game) {
-            console.log('new game');
+        socket.on('server:start game', function (player) {
+            addPlayer(player)
+            restore();
         });
 
-        socket.on('server:new player', function (msg) {
-            console.log(msg);
-            players.push(createCharacter());
+        socket.on('player list', function (newPlayers) {
+            _.each(newPlayers, function (player) {
+                players.push(createCharacter(player));
+            });
         });
 
-        socket.on('server:player move', function (delta, controls) {
-            if (players.length > 0)
-                players[0].updateFromData(delta, controls);
+        socket.on('server:new player', function (player) {
+            console.log("new player : ", player);
+            players.push(createCharacter(player));
+        });
+
+        socket.on('server:remove player', function (id) {
+
+            console.log("server:remove player : ", id);
+            console.log("players :", players);
+            var player = _.find(players, function (player) {
+                return player == id;
+            });
+
+            console.log("removing player : ", player);
+            //player.remove();
+            //scene.remove( mesh );
+            //
+            //mesh.dispose(); // new
+            //geometry.dispose();
+            //material.dispose();
+            //texture.dispose();
+
+        });
+
+        socket.on('server:player move', function (delta, controls, player) {
+
+            var player = _.find(players, {id: player.id});
+            console.log("server:player move", player);
+
+            if (player)
+                player.updateFromData(delta, controls);
         });
     }
 
@@ -179,7 +229,6 @@ var Game = function () {
         initColladaLoader();
         addMap();
         addLigth();
-        addPlayer();
         initNetwork();
 
         animate();
