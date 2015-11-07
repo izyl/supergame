@@ -9,13 +9,13 @@ var Game = function () {
     }
 
     this.addPlayer = function (player) {
-        this.players.push({id: player.id, name: 'Super gamer ' + player.count, life: 100});
+        this.players.push({id: player.id, name: 'Super gamer ' + player.count, life: 100, controls: {}});
     }
 
     this.removePlayer = function (id) {
 
         console.log("removing player : ", id);
-        this.players = _.filter(this.players, function(player){
+        this.players = _.filter(this.players, function (player) {
 
             return player.id != id;
         });

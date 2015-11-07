@@ -34,6 +34,7 @@ SUPERGAME
 	- [] path finding	
 	- [] bonus
 	- [] login
+	- [] remote player local instance destroy sur leave
 	
 ####Infographie : Blender
 	- [x] courir

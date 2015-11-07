@@ -103,6 +103,7 @@ var Game = function () {
         var character = new Character();
         character.id = player.id;
         character.name = player.name;
+        character.remote = player.remote;
         character.scale = 3;
         character.loadParts(stickmanCfg);
         character.enableShadows(true);
@@ -116,6 +117,7 @@ var Game = function () {
     function addPlayer(player) {
 
         character = createCharacter(player);
+        character.remote = false;
         character.controls = new KeyboardControls(character);
         var gyro = new THREE.Gyroscope();
         gyro.position.set(0, 1, 0);
@@ -184,6 +186,7 @@ var Game = function () {
 
         socket.on('player list', function (newPlayers) {
             _.each(newPlayers, function (player) {
+                player.remote = true;
                 players.push(createCharacter(player));
             });
         });
@@ -212,13 +215,13 @@ var Game = function () {
 
         });
 
-        socket.on('server:player move', function (delta, controls, player) {
+        socket.on('server:player move', function (delta, remotePlayer) {
+            console.log("server:player move", delta, remotePlayer);
+            var remotePlayerLocalInstance = _.find(players, {id: remotePlayer.id});
+            console.log("server:player move", remotePlayerLocalInstance);
 
-            var player = _.find(players, {id: player.id});
-            console.log("server:player move", player);
-
-            if (player)
-                player.updateFromData(delta, controls);
+            if (remotePlayerLocalInstance)
+                remotePlayerLocalInstance.updateData(remotePlayer.controls);
         });
     }
 
@@ -272,6 +275,10 @@ var Game = function () {
             if (character.needServerUpdate) {
                 socket.emit('player move', delta, character.controls);
             }
+
+            _.each(players, function(player){
+                player.update(delta);
+            });
         }
         cameraControls.update(delta);
     };

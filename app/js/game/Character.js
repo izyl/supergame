@@ -73,6 +73,7 @@ Character = function () {
         jump: false,
         attack: false
     };
+    this.remote = false;
 
     // API
 
@@ -193,9 +194,8 @@ Character = function () {
         }
     };
 
-    this.updateFromData = function (delta, controls) {
+    this.updateData = function (controls) {
         this.controls = controls;
-        this.update(delta);
     };
 
     this.update = function (delta, collidables) {
@@ -203,13 +203,16 @@ Character = function () {
         this.checkControls();
 
         this.updateMovementModel(delta);
-        this.collisions(collidables);
+        if (collidables)
+            this.collisions(collidables);
 
         if (this.animations) {
             this.updateBehaviors(delta);
             this.updateAnimations(delta);
         }
-        this.lastControls = _.clone(this.controls);
+
+        if (!this.remote)
+            this.lastControls = _.clone(this.controls);
 
     };
 
@@ -443,7 +446,7 @@ Character = function () {
         return k === 1 ? 1 : -Math.pow(2, -10 * k) + 1;
     }
 
-    this.collisions = function(collidables) {
+    this.collisions = function (collidables) {
 
         if (!this.meshBody) return;
 
@@ -474,6 +477,8 @@ Character = function () {
     }
 
     this.checkControls = function () {
+
+        if (this.remote) return;
 
         if (!_.isEqual(this.controls, this.lastControls)) {
             this.needServerUpdate = true;
