@@ -1,6 +1,7 @@
 /**
  * @author alteredq / http://alteredqualia.com/
  */
+var _ = require("lodash");
 var THREE = require("THREE");
 require("game/loaders/ColladaLoader");
 
@@ -21,11 +22,13 @@ Character = function () {
     this.root = new THREE.Object3D();
     this.verticalVelocity = 9.8 * 100;
     this.isOnObject = true;
-    this.fontblock = false;
+    this.frontblock = false;
 
     this.meshBody = null;
     this.meshWeapon = null;
     this.controls = null;
+    this.lastControls = null;
+    this.needServerUpdate = false;
 
     // skins
     this.skinsBody = [];
@@ -51,6 +54,9 @@ Character = function () {
 
     this.walkSpeed = this.maxSpeed;
     this.crouchSpeed = this.maxSpeed * 0.5;
+
+    // collision
+    this.caster = new THREE.Raycaster();
 
     // internal animation parameters
 
@@ -192,14 +198,19 @@ Character = function () {
         this.update(delta);
     };
 
-    this.update = function (delta) {
+    this.update = function (delta, collidables) {
 
-        if (this.controls) this.updateMovementModel(delta);
+        this.checkControls();
+
+        this.updateMovementModel(delta);
+        this.collisions(collidables);
 
         if (this.animations) {
             this.updateBehaviors(delta);
             this.updateAnimations(delta);
         }
+        this.lastControls = _.clone(this.controls);
+
     };
 
     this.updateAnimations = function (delta) {
@@ -304,8 +315,12 @@ Character = function () {
         var controls = this.controls;
         // speed based on controls
 
-        if (controls.crouch)    this.maxSpeed = this.crouchSpeed;
-        else this.maxSpeed = this.walkSpeed;
+        if (controls.crouch) {
+            this.maxSpeed = this.crouchSpeed;
+        }
+        else {
+            this.maxSpeed = this.walkSpeed;
+        }
 
         // orientation based on controls
         // (don't just stand while turning)
@@ -350,7 +365,7 @@ Character = function () {
 
         // displacement
 
-        if(!this.fontblock){
+        if (!this.frontblock) {
 
             var forwardDelta = this.speed * delta;
 
@@ -380,14 +395,14 @@ Character = function () {
         }
 
 
-        if (this.root.position.y < -1) {
-
-            this.verticalVelocity = 0;
-            this.root.position.y = 1;
-
-            this.controls.canJump = true;
-            this.isOnObject = true;
-        }
+        //if (this.root.position.y < -1) {
+        //
+        //    //this.verticalVelocity = 0;
+        //    //this.root.position.y = 1;
+        //
+        //    this.controls.canJump = true;
+        //    this.isOnObject = true;
+        //}
     };
 
     // internal helpers
@@ -426,6 +441,46 @@ Character = function () {
 
     function exponentialEaseOut(k) {
         return k === 1 ? 1 : -Math.pow(2, -10 * k) + 1;
+    }
+
+    this.collisions = function(collidables) {
+
+        if (!this.meshBody) return;
+
+        // collision bot
+        var originPoint = this.root.position.clone();
+        var ray = new THREE.Vector3(0, -1, 0);
+        this.caster.set(originPoint, ray);
+        var test = _.pluck(collidables, 'children[0]');
+        var collisions = this.caster.intersectObjects(test);
+        if (!_.isEmpty(collisions) && collisions[0].distance < 1) {
+            this.isOnObject = true;
+        } else {
+            this.isOnObject = false;
+        }
+
+        // collision front
+        var matrix = new THREE.Matrix4();
+        matrix.extractRotation(this.root.matrix);
+        ray = new THREE.Vector3(0, 0, 1);
+        ray.applyMatrix4(matrix);
+        this.caster.set(originPoint, ray);
+        collisions = this.caster.intersectObjects(test);
+        if (!_.isEmpty(collisions) && collisions[0].distance < 1) {
+            this.frontblock = true;
+        } else {
+            this.frontblock = false;
+        }
+    }
+
+    this.checkControls = function () {
+
+        if (!_.isEqual(this.controls, this.lastControls)) {
+            this.needServerUpdate = true;
+        } else {
+            this.needServerUpdate = false;
+        }
+
     }
 
 };

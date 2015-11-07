@@ -1,16 +1,13 @@
 SUPERGAME
 ---------------
 
-
-
-
 ##TODO :
 
 ###Web site : angular
-
+	- [] enable/disable fps
+	- [] enable/disable map
 	- [] Menus bootstrap retractables avec chat et preferences
 	- [] Preferences clavier souris
-
 
 ###Jeu
 
@@ -22,23 +19,20 @@ SUPERGAME
 	- [] salons/parties
 	- [] equipes
 	- [] partie : win/loose
-	
 	- [] stockage utilisateurs/mdp -> MongoDB
 
 ####Client : three.js, socket.io-client
-
+	- [] stats
 	- [] vue carte map
 	- [] prediction
 	- [x] collision 
 	- [] test(raycaster vs box)
 	- [x] pesanteur : bot collision
 	- [x] obstacles : front collision
-	
 	- [] attaque
 	- [] IA -> pnj
 	- [] path finding	
 	- [] bonus
-	
 	- [] login
 	
 ####Infographie : Blender
@@ -51,6 +45,5 @@ SUPERGAME
 	
 	
 ##references
-
-	* https://quaintproject.wordpress.com/2014/01/25/exporting-from-blender-to-web-gl-using-collada-and-three-js-part-2/
-	* http://blog.2pha.com/experimenting-threejs-shaders-and-shadermaterial
+	[exporting from blender to threejs](https://quaintproject.wordpress.com/2014/01/25/exporting-from-blender-to-web-gl-using-collada-and-three-js-part-2)
+	[shaders and shadermaterial](http://blog.2pha.com/experimenting-threejs-shaders-and-shadermaterial)

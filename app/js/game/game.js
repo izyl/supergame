@@ -40,18 +40,18 @@ var Game = function () {
     var character;
     var players = [];
 
-    // collision
-    var rayBot = new THREE.Vector3(0, -1, 0);
-    var caster = new THREE.Raycaster();
-
     init();
 
     function addMap() {
-        loader.load('models/map/map_1.dae', function (collada) {
-            //dummy1.dae
+        loader.load('models/map/map_2.dae', function (collada) {
             map = collada.scene;
-            var skin = collada.skins[0];
-            map.position.set(0, 0, 0);//x,z,y- if you think in blender dimensions ;)
+            map.position.set(0, 0, 0);
+
+            collada.scene.traverse( function( node ) {
+                if( node.material ) {
+                    node.material.side = THREE.DoubleSide;
+                }
+            });
 
             scene.add(map);
         });
@@ -59,9 +59,11 @@ var Game = function () {
 
     function addLigth() {
 
-        scene.add(new THREE.AmbientLight(0x777777));
-        light = new THREE.DirectionalLight(0xffffff, 0.5);
-        light.position.set(-100, 200, 100);
+        var ambientLight = new THREE.AmbientLight(0x333333); // 0.2
+        scene.add(ambientLight);
+
+        light = new THREE.DirectionalLight(0xffffff, 1.0);
+        light.position.set(0, 200, 0);
         scene.add(light);
     }
 
@@ -99,10 +101,10 @@ var Game = function () {
 
         character = createCharacter();
         character.controls = new KeyboardControls(character);
-        //var gyro = new THREE.Gyroscope();
-        //gyro.position.set(0,1,0);
-        //gyro.add(camera);
-        //character.root.add(gyro);
+        var gyro = new THREE.Gyroscope();
+        gyro.position.set(0,1,0);
+        gyro.add(camera);
+        character.root.add(gyro);
 
     };
 
@@ -117,9 +119,12 @@ var Game = function () {
         scene = new THREE.Scene();
         renderer = new THREE.WebGLRenderer({
             antialias: true,
-            clearAlpha: 1,
+            //clearAlpha: 1,
             clearColor: 0xccdddd
         });
+
+        renderer.gammaInput = true;
+        renderer.gammaOutput = true;
 
         clock = new THREE.Clock();
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 40000);
@@ -127,7 +132,7 @@ var Game = function () {
         scene.add(camera);
         cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
         cameraControls.zoomSpeed = 1.2;
-        cameraControls.noRotate = true;
+        //cameraControls.noRotate = true;
 
         cameraControls.keys = [65, 83, 68];
 
@@ -210,43 +215,15 @@ var Game = function () {
         renderer.render(scene, camera);
     }
 
-    function collisions() {
-
-        if (!character.meshBody) return;
-
-        // collision bot
-        var originPoint = character.root.position.clone();
-        var ray = new THREE.Vector3(0, -1, 0);
-        caster.set(originPoint, ray);
-        var collisions = caster.intersectObjects(map.children[0].children);
-        if (!_.isEmpty(collisions) && collisions[0].distance < 1) {
-            character.isOnObject = true;
-        } else {
-            character.isOnObject = false;
-        }
-
-        // collision front
-        var matrix = new THREE.Matrix4();
-        matrix.extractRotation( character.root.matrix );
-        ray = new THREE.Vector3( 0, 0, 1 );
-        ray.applyMatrix4(matrix);
-        caster.set(originPoint, ray);
-        collisions = caster.intersectObjects(map.children[0].children);
-        if (!_.isEmpty(collisions) && collisions[0].distance < 1) {
-            character.fontblock = true;
-        } else {
-            character.fontblock = false;
-        }
-    }
-
-
     function update() {
         var delta = clock.getDelta();
-        character.update(delta);
-        socket.emit('player move', delta, character.controls);
 
-        if (map)
-            collisions();
+        if (map) {
+            character.update(delta, map.children);
+            if (character.needServerUpdate) {
+                socket.emit('player move', delta, character.controls);
+            }
+        }
         cameraControls.update(delta);
     };
 };

@@ -25,9 +25,11 @@ var customOpts = {
 var opts = assign({}, watchify.args, customOpts);
 gulp.task("default", ["js", "resources"]);
 
-gulp.watch([srcDir + "models/**/*", srcDir + "css/**/*", srcDir + "index.html", srcDir + "nav/**/*", srcDir + "views/**/*"], ["resources"]);
+gulp.watch([srcDir + "models/**/*", srcDir + "index.html", srcDir + "nav/**/*", srcDir + "views/**/*"], ["resources"]);
 gulp.task("resources", resources);
 function resources() {
+
+    gutil.log("copyinh resources : " + new Date());
 
     gulp.src([srcDir + "models/**/*"])
         .pipe(gulp.dest(buildDir + "models/"));
@@ -50,6 +52,8 @@ function resources() {
 
 gulp.task("js", bundle); // so you can run `gulp` to build the file
 function bundle() {
+
+    gutil.log("bundling js : " + new Date());
 
     //gutil.log(opts);
     var b = watchify(browserify([], opts));
