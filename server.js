@@ -32,11 +32,19 @@ io.on('connection', function (socket) {
         game.removePlayer(socket.id);
     });
 
-    socket.on('player move', function (delta, controls) {
-        console.log('player move: ', socket.id);
+    /**
+     * data : {
+     *  controls,
+     *  position
+     * }
+     */
+    socket.on('player move', function (delta, data) {
+
+        console.log('player move: ', socket.id, data);
         var player = game.getPlayer(socket.id);
         console.log('player move: ', player);
-        player.controls = controls;
+        player.controls = data.controls;
+        player.position = data.position;
         socket.broadcast.emit('server:player move', delta, player);
     });
 

@@ -194,8 +194,10 @@ Character = function () {
         }
     };
 
-    this.updateData = function (controls) {
-        this.controls = controls;
+
+    this.updateData = function (remotePlayer) {
+        this.controls = remotePlayer.controls;
+        this.root.position.copy (remotePlayer.position);
     };
 
     this.update = function (delta, collidables) {

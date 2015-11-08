@@ -168,7 +168,7 @@ var Game = function () {
         });
     };
 
-     function restore() {
+    function restore() {
         var $container = $("#game-container");
 
         $container.append(renderer.domElement);
@@ -221,7 +221,7 @@ var Game = function () {
             console.log("server:player move", remotePlayerLocalInstance);
 
             if (remotePlayerLocalInstance)
-                remotePlayerLocalInstance.updateData(remotePlayer.controls);
+                remotePlayerLocalInstance.updateData(remotePlayer);
         });
     }
 
@@ -273,10 +273,13 @@ var Game = function () {
         if (map) {
             character.update(delta, map.children);
             if (character.needServerUpdate) {
-                socket.emit('player move', delta, character.controls);
+                socket.emit('player move', delta, {
+                    controls: character.controls,
+                    position: character.root.position
+                });
             }
 
-            _.each(players, function(player){
+            _.each(players, function (player) {
                 player.update(delta);
             });
         }
