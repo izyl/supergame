@@ -20,7 +20,12 @@ Character = function () {
     this.bodyOrientation = 0;
 
     this.root = new THREE.Object3D();
-    this.verticalVelocity = 9.8 * 100;
+    this.verticalVelocity = 9.8 * 500;
+
+    this.falling = false;
+    this.jumpHeight = 0;
+    this.maxJumpHeight = 2;
+
     this.isOnObject = true;
     this.frontblock = false;
     this.weapons = [];
@@ -388,22 +393,44 @@ Character = function () {
 
         if (!this.remote) {
             this.verticalVelocity = 9.8;
-        }
-        this.verticalVelocity = Math.abs(this.verticalVelocity * delta);
-        if (controls.jump) {
-            this.isOnObject = false;
+            this.verticalVelocity = Math.abs(this.verticalVelocity * delta);
 
-        } else if (!this.isOnObject) {
-            this.verticalVelocity = this.verticalVelocity * -1;
+
+            if (this.jumpHeight >= this.maxJumpHeight) {
+                this.falling = true;
+            }
+
+            if (controls.jump) {
+
+                // le joueur tombe mais n'a pas lache le bouton...
+                if (!this.falling) {
+                    this.isOnObject = false;
+                }
+
+            } else if (!this.isOnObject) { // le joueur tombe
+                this.falling = true;
+
+            } else { // le joueur est au sol
+
+                this.falling = false;
+                this.jumpHeight = 0;
+            }
+
+            if (this.falling) {
+                this.verticalVelocity = this.verticalVelocity * -1;
+            }
+
+            if (this.jump || !this.isOnObject) {
+
+                this.root.translateY(this.verticalVelocity);
+                this.jumpHeight += this.verticalVelocity;
+            }
+
+            if (this.isOnObject === true) {
+                this.verticalVelocity = Math.max(0, this.verticalVelocity);
+            }
         }
 
-        if (this.jump || !this.isOnObject) {
-            this.root.translateY(this.verticalVelocity);
-        }
-
-        if (this.isOnObject === true) {
-            this.verticalVelocity = Math.max(0, this.verticalVelocity);
-        }
     };
 
     // internal helpers
