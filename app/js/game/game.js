@@ -183,15 +183,14 @@ var Game = function ($scope) {
 
     function initNetwork() {
         var self = this;
-        socket.emit('new player');
-
         socket.on('server:start game', function (player) {
             $scope.$emit('toast', "Let's get started : " + player.name);
+            $scope.$emit('player name', player.name);
             addPlayer(player);
             restore();
         });
 
-        socket.on('player list', function (newPlayers) {
+        socket.on('server:player list', function (newPlayers) {
             _.each(newPlayers, function (player) {
                 player.remote = true;
                 players.push(createCharacter(player));
@@ -281,7 +280,7 @@ var Game = function ($scope) {
             if (character.checkControls()) {
 
                 //console.log("client: sending new infos to server");
-                socket.emit('player move', delta, {
+                socket.emit('client:player controls', delta, {
                     controls: character.controls,
                     position: character.root.position
                 });
@@ -294,6 +293,10 @@ var Game = function ($scope) {
             });
         }
         cameraControls.update(delta);
+    };
+
+    return {
+        restore: restore
     };
 };
 

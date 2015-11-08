@@ -42,7 +42,7 @@ io.on('connection', function (socket) {
      *  position
      * }
      */
-    socket.on('player move', function (delta, data) {
+    socket.on('client:player controls', function (delta, data) {
 
         //console.log('player move: ', socket.id, data);
         var player = game.getPlayer(socket.id);
@@ -63,14 +63,14 @@ io.on('connection', function (socket) {
         });
     });
 
-    socket.on('chat message', function (msg) {
+    socket.on('client:chat message', function (msg) {
         console.log('message: ' + msg);
-        socket.broadcast.emit('chat message', msg);
+        socket.broadcast.emit('server:chat message', msg);
     });
 
     console.log('client start game');
 
-    socket.emit("player list", game.players);
+    socket.emit("server:player list", game.players);
     game.addPlayer({
         id: socket.id,
         count: ++playerCounter

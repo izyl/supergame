@@ -6,6 +6,8 @@ var GameService = function () {
     this.getGame = function ($scope) {
         if (!game) {
             game = new Game($scope);
+        } else {
+            game.restore();
         }
         return game;
     };

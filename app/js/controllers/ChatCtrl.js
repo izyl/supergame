@@ -13,12 +13,12 @@ var ChatCtrl = function ($scope) {
             };
 
             $scope.items.push(msg);
-            socket.emit('chat message', msg);
+            socket.emit('client:chat message', msg);
             $scope.text = '';
         }
     };
 
-    socket.on('chat message', function (msg) {
+    socket.on('server:chat message', function (msg) {
         $scope.items.push(msg);
         $scope.$apply();
     });

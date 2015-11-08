@@ -46,6 +46,11 @@ var app = angular.module('jambonsVsZombies', ['ngRoute', 'ngAnimate'])
         $rootScope.user = {
             name: 'anonymous'
         };
+
+        $rootScope.$on("player name", function(event, data){
+            $rootScope.user.name = data;
+        });
+
     })
     .controller('GameCtrl', ['$scope', GameService, GameCtrl])
     .controller('ChatCtrl', ['$scope', ChatCtrl])
