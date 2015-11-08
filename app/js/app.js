@@ -21,21 +21,15 @@ var app = angular.module('jambonsVsZombies', ['ngRoute', 'ngAnimate'])
         '$routeProvider',
         function ($locationProvider, $routeProvider) {
             $routeProvider.
-                when('/home', {
-                    templateUrl: 'views/home.html',
-                    controller: ChatCtrl
-                }).
-                when('/game', {
-                    templateUrl: 'views/game.html',
-                    controller: GameCtrl
-                }).
-                when('/chat', {
-                    templateUrl: 'views/chat.html',
-                    controller: ChatCtrl
-                }).
-                otherwise({
-                    redirectTo: '/home'
-                });
+            when('/home', {
+                templateUrl: 'views/home.html'
+            }).
+            when('/game', {
+                templateUrl: 'views/game.html'
+            }).
+            otherwise({
+                redirectTo: '/home'
+            });
         }
     ])
     // services
@@ -47,11 +41,11 @@ var app = angular.module('jambonsVsZombies', ['ngRoute', 'ngAnimate'])
             name: 'anonymous'
         };
 
-        $rootScope.$on("player name", function(event, data){
+        $rootScope.$on("player name", function (event, data) {
             $rootScope.user.name = data;
         });
 
     })
-    .controller('GameCtrl', ['$scope', GameService, GameCtrl])
+    .controller('GameCtrl', ['$scope', 'GameService', GameCtrl])
     .controller('ChatCtrl', ['$scope', ChatCtrl])
     .controller('NavCtrl', ['$scope', '$location', '$http', NavCtrl]);

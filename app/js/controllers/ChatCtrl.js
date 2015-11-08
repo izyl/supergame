@@ -1,7 +1,25 @@
 var socket = require('socket.io-client')();
+var $ = require("jQuery");
+var toastr = require("toastr");
 
 var ChatCtrl = function ($scope) {
+
+    var id = Date.now();
     $scope.items = [];
+    $scope.showChat = false;
+
+    $(document).keydown(function (event) {
+
+        console.log("id", id);
+        if (event.keyCode === 13)
+            $scope.showChat = true;
+
+        if (event.keyCode === 27)
+            $scope.showChat = false;
+
+        $scope.$apply();
+    });
+
     $scope.sendMessage = function () {
         if ($scope.text) {
 
@@ -20,6 +38,8 @@ var ChatCtrl = function ($scope) {
 
     socket.on('server:chat message', function (msg) {
         $scope.items.push(msg);
+        console.log(msg);
+        toastr.success(msg.author + " : " + msg.text );
         $scope.$apply();
     });
 };
