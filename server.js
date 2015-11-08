@@ -23,6 +23,7 @@ var Game = require("./server/Game.js");
 var game = new Game();
 var playerCounter = 0;
 
+
 io.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
@@ -34,18 +35,32 @@ io.on('connection', function (socket) {
 
     /**
      * data : {
-     *  controls,
+     *  controls : {
+     *      up,...
+     *      timestamp
+     *  },
      *  position
      * }
      */
     socket.on('player move', function (delta, data) {
 
-        console.log('player move: ', socket.id, data);
+        //console.log('player move: ', socket.id, data);
         var player = game.getPlayer(socket.id);
-        console.log('player move: ', player);
-        player.controls = data.controls;
-        player.position = data.position;
-        socket.broadcast.emit('server:player move', delta, player);
+        //console.log('player move: ', player);
+
+        var snapshot = {
+            controls: data.controls,
+            position: data.position
+
+        }
+
+        player.queue(snapshot);
+
+        socket.broadcast.emit('server:player move', delta, {
+            id: socket.id,
+            controls: snapshot.controls,
+            position: snapshot.position
+        });
     });
 
     socket.on('chat message', function (msg) {

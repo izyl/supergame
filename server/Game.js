@@ -1,15 +1,26 @@
 var _ = require("lodash");
+var Player = require("./Player");
 
 var Game = function () {
 
     this.players = [];
+    /**
+     *
+     * @param id : player id
+     * @param snapshot
+     */
+    this.addSnapshot = function (id, snapshot) {
+        var player = this.getPlayer(id);
+        player.queue(snapshot);
+    };
 
     this.getPlayer = function (id) {
         return _.find(this.players, {id: id});
     }
 
     this.addPlayer = function (player) {
-        this.players.push({id: player.id, name: 'Super gamer ' + player.count, life: 100, controls: {}});
+        var player = new Player({id: player.id, name: 'Super gamer ' + player.count, life: 100});
+        this.players.push(player);
     }
 
     this.removePlayer = function (id) {

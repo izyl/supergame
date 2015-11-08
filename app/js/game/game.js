@@ -107,6 +107,10 @@ var Game = function ($scope) {
         character.id = player.id;
         character.name = player.name;
         character.remote = player.remote;
+        if (character.remote) {
+            character.verticalVelocity = 0;
+        }
+
         character.scale = 3;
         character.loadParts(stickmanCfg);
         character.enableShadows(true);
@@ -120,7 +124,6 @@ var Game = function ($scope) {
     function addPlayer(player) {
 
         character = createCharacter(player);
-        character.remote = false;
         character.controls = new KeyboardControls(character);
         var gyro = new THREE.Gyroscope();
         gyro.position.set(0, 1, 0);
@@ -196,19 +199,20 @@ var Game = function ($scope) {
         });
 
         socket.on('server:new player', function (remotePlayer) {
-            console.log("new player : ", remotePlayer);
-            $scope.$emit('toast', "New palyer : " + remotePlayer.name);
-            players.push(createCharacter(player));
+            //console.log("new player : ", remotePlayer);
+            $scope.$emit('toast', "New player : " + remotePlayer.name);
+            remotePlayer.remote = true;
+            players.push(createCharacter(remotePlayer));
         });
 
         socket.on('server:remove player', function (remotePlayer) {
 
             $scope.$emit('toast', "Player disconnected : " + remotePlayer.name);
-            console.log("server:remove player : ", remotePlayer);
-            console.log("players :", players);
+            //console.log("server:remove player : ", remotePlayer);
+            //console.log("players :", players);
             var disconnectedRemotePlayer = _.find(players, {id: remotePlayer.id});
 
-            console.log("removing player : ", disconnectedRemotePlayer);
+            //console.log("removing player : ", disconnectedRemotePlayer);
             disconnectedRemotePlayer.destroy(scene);
             players = _.filter(players, function (player) {
 
@@ -272,13 +276,16 @@ var Game = function ($scope) {
         var delta = clock.getDelta();
 
         if (map) {
-            character.update(delta, map.children);
-            if (character.needServerUpdate) {
+
+            if (character.checkControls()) {
+
+                //console.log("client: sending new infos to server");
                 socket.emit('player move', delta, {
                     controls: character.controls,
                     position: character.root.position
                 });
             }
+            character.update(delta, map.children);
 
             _.each(players, function (player) {
                 player.update(delta);

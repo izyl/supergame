@@ -8,6 +8,7 @@ SUPERGAME
 	- [] enable/disable map
 	- [] Menus bootstrap retractables avec chat et preferences
 	- [] Preferences clavier souris
+	- [] in game chat (default key enter) : partie + team + private + global
 
 ###Jeu
 
@@ -48,3 +49,4 @@ SUPERGAME
 ##references
 	[exporting from blender to threejs](https://quaintproject.wordpress.com/2014/01/25/exporting-from-blender-to-web-gl-using-collada-and-three-js-part-2)
 	[shaders and shadermaterial](http://blog.2pha.com/experimenting-threejs-shaders-and-shadermaterial)
+	[game networking fast paced multiplayer](http://gabrielgambetta.com/fast_paced_multiplayer.html)

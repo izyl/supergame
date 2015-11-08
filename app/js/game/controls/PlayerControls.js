@@ -10,8 +10,7 @@ var KeyboardControl = function (character) {
         right: false,
         crouch: false,
         jump: false,
-        attack: false,
-        canJump : true
+        attack: false
     };
     character.controls = controls;
 
@@ -36,7 +35,7 @@ var KeyboardControl = function (character) {
 
 
 
-// TODO : Faire Différentes classes pour les controls (clavier, souris), Un InputController (pouvoir changer le mode de control)
+// TODO : Faire Diffï¿½rentes classes pour les controls (clavier, souris), Un InputController (pouvoir changer le mode de control)
     function onKeyDown(event) {
 
         switch (event.keyCode) {

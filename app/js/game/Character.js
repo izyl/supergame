@@ -9,62 +9,23 @@ Character = function () {
 
     var scope = this;
 
-    this.scale = 1;
-
-    // animation parameters
-    this.animationFPS = 20;
-    this.transitionFrames = 15;
-
-    // movement model parameters
+    /************************
+     * Model part
+     * **************************/
     this.maxSpeed = 6;
+    this.walkSpeed = this.maxSpeed;
+    this.crouchSpeed = this.maxSpeed * 0.5;
+    this.scale = 1;
+    this.speed = 0;
+    this.bodyOrientation = 0;
 
-    // rig
     this.root = new THREE.Object3D();
     this.verticalVelocity = 9.8 * 100;
     this.isOnObject = true;
     this.frontblock = false;
-
-    this.meshBody = null;
-    this.meshWeapon = null;
-    this.controls = null;
-    this.lastControls = null;
-    this.needServerUpdate = false;
-
-    // skins
-    this.skinsBody = [];
-    this.skinsWeapon = [];
     this.weapons = [];
 
-    this.currentSkin = undefined;
-
-    this.onLoadComplete = function () {
-    };
-
-    // internals
-
-    this.meshes = [];
-    this.animations = {};
-
-    this.loadCounter = 0;
-
-    // internal movement control variables
-
-    this.speed = 0;
-    this.bodyOrientation = 0;
-
-    this.walkSpeed = this.maxSpeed;
-    this.crouchSpeed = this.maxSpeed * 0.5;
-
-    // collision
-    this.caster = new THREE.Raycaster();
-
-    // internal animation parameters
-
-    this.activeAnimation = null;
-    this.oldAnimation = null;
-
-    this.controls = {
-
+    this.idleControl = {
         up: false,
         down: false,
         left: false,
@@ -73,15 +34,42 @@ Character = function () {
         jump: false,
         attack: false
     };
+    this.controls = _.clone(this.idleControl);
+    this.lastControl = null;
+    this.pendingControls = [];
+
     this.remote = false;
 
-    this.destroy = function (scene) {
+    /*************************
+     * 3D part
+     * ***************************/
+    this.animationFPS = 20;
+    this.transitionFrames = 15;
 
-        //
-        //mesh.dispose(); // new
-        //geometry.dispose();
-        //material.dispose();
-        //texture.dispose();
+    this.meshBody = null;
+    this.meshWeapon = null;
+
+    // skins
+    this.skinsBody = [];
+    this.skinsWeapon = [];
+
+    this.currentSkin = undefined;
+
+    // internals
+    this.meshes = [];
+    this.animations = {};
+    this.loadCounter = 0;
+    // collision
+    this.caster = new THREE.Raycaster();
+
+    // internal animation parameters
+    this.activeAnimation = null;
+    this.oldAnimation = null;
+
+    this.onLoadComplete = function () {
+    };
+
+    this.destroy = function (scene) {
 
         this.meshBody.traverse(function (node) {
             scene.remove(node);
@@ -96,7 +84,6 @@ Character = function () {
     }
 
     // API
-
     this.enableShadows = function (enable) {
 
         for (var i = 0; i < this.meshes.length; i++) {
@@ -216,26 +203,25 @@ Character = function () {
 
 
     this.updateData = function (remotePlayer) {
+
         this.controls = remotePlayer.controls;
         this.root.position.copy (remotePlayer.position);
     };
 
     this.update = function (delta, collidables) {
 
-        this.checkControls();
+        if (!this.remote) {
+            if (collidables)
+                this.collisions(collidables);
+        }
 
         this.updateMovementModel(delta);
-        if (collidables)
-            this.collisions(collidables);
-
         if (this.animations) {
             this.updateBehaviors(delta);
             this.updateAnimations(delta);
         }
 
-        if (!this.remote)
-            this.lastControls = _.clone(this.controls);
-
+        this.lastControl = _.clone(this.controls);
     };
 
     this.updateAnimations = function (delta) {
@@ -401,7 +387,9 @@ Character = function () {
         // steering
         this.root.rotation.y = this.bodyOrientation;
 
-        this.verticalVelocity = 9.8;
+        if (!this.remote) {
+            this.verticalVelocity = 9.8;
+        }
         this.verticalVelocity = Math.abs(this.verticalVelocity * delta);
         if (controls.jump) {
             this.isOnObject = false;
@@ -416,18 +404,7 @@ Character = function () {
 
         if (this.isOnObject === true) {
             this.verticalVelocity = Math.max(0, this.verticalVelocity);
-            this.controls.canJump = true;
         }
-
-
-        //if (this.root.position.y < -1) {
-        //
-        //    //this.verticalVelocity = 0;
-        //    //this.root.position.y = 1;
-        //
-        //    this.controls.canJump = true;
-        //    this.isOnObject = true;
-        //}
     };
 
     // internal helpers
@@ -464,13 +441,13 @@ Character = function () {
         if (scope.loadCounter === 0)    scope.onLoadComplete();
     }
 
-    function exponentialEaseOut(k) {
-        return k === 1 ? 1 : -Math.pow(2, -10 * k) + 1;
-    }
-
     this.collisions = function (collidables) {
 
         if (!this.meshBody) return;
+
+
+        var wasOnObject = this.isOnObject;
+        var wasBlockedFront = this.frontblock;
 
         // collision bot
         var originPoint = this.root.position.clone();
@@ -496,18 +473,26 @@ Character = function () {
         } else {
             this.frontblock = false;
         }
+
     }
 
     this.checkControls = function () {
 
-        if (this.remote) return;
+        var needServerUpdate = false;
 
-        if (!_.isEqual(this.controls, this.lastControls)) {
-            this.needServerUpdate = true;
-        } else {
-            this.needServerUpdate = false;
+        if (this.remote) return needServerUpdate;
+
+        // if the user send inputs or if he just stopped but not when he is not doing anything
+        if (_.includes(this.controls, true) || !_.isEqual(this.lastControl, this.controls)) {
+
+            //console.log(this.controls);
+            this.controls.timestamp = Date.now();
+            var controls = _.clone(this.controls);
+            this.pendingControls.push(controls);
+            needServerUpdate = true;
         }
 
+        return needServerUpdate;
     }
 
 };
