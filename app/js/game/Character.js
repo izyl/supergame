@@ -221,8 +221,6 @@ Character = function () {
             this.updateBehaviors(delta);
             this.updateAnimations(delta);
         }
-
-        this.lastControl = _.clone(this.controls);
     };
 
     this.updateAnimations = function (delta) {
@@ -462,6 +460,10 @@ Character = function () {
             this.isOnObject = false;
         }
 
+        if (!wasOnObject && this.isOnObject) {
+            this.needServerUpdate = true;
+        }
+
         // collision front
         var matrix = new THREE.Matrix4();
         matrix.extractRotation(this.root.matrix);
@@ -474,11 +476,6 @@ Character = function () {
         } else {
             this.frontblock = false;
         }
-
-        if(!wasOnObject && this.isOnObject){
-            this.needServerUpdate = true;
-        }
-
     }
 
     this.checkControls = function () {
@@ -492,10 +489,11 @@ Character = function () {
 
             //console.log(this.controls);
             this.controls.timestamp = Date.now();
-            var controls = _.clone(this.controls);
-            this.pendingControls.push(controls);
+            this.pendingControls.push(this.lastControl);
             needServerUpdate = true;
         }
+
+        this.lastControl = _.clone(this.controls);
 
         return needServerUpdate;
     }

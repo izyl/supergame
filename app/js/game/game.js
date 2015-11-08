@@ -279,11 +279,12 @@ var Game = function ($scope) {
             character.update(delta, map.children);
             if (character.checkControls()) {
 
-                //console.log("client: sending new infos to server");
-                socket.emit('client:player controls', delta, {
-                    controls: character.controls,
+                var snapshot = {
+                    controls: character.lastControl,
                     position: character.root.position
-                });
+                };
+                console.log("client: sending new infos to server :", snapshot);
+                socket.emit('client:player controls', delta, snapshot);
                 character.needServerUpdate = false;
             }
 

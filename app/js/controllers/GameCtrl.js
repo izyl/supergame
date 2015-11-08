@@ -5,8 +5,6 @@ var GameCtrl = function ($scope, GameService) {
     $scope.game = GameService.getGame($scope);
 
     $scope.$on("toast", function(event, data){
-
-        console.log("toast ", data);
         toastr.info(data)
     });
 };
