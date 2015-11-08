@@ -1,20 +1,14 @@
-var socket = require('socket.io-client')();
+var toastr = require("toastr");
 
 var GameCtrl = function ($scope, GameService) {
-    var game = GameService.getGame();
 
-    $scope.gameData = {
-        id: -1,
-        player: {
-            name: $scope.user.name,
-            hp: 100
-        }
-    };
+    $scope.game = GameService.getGame($scope);
 
-    this.getGame = function(){
+    $scope.$on("toast", function(event, data){
 
-        return GameService.getGame();
-    }
+        console.log("toast ", data);
+        toastr.info(data)
+    });
 };
 
 module.exports = GameCtrl;

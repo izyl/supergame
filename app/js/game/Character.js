@@ -75,6 +75,26 @@ Character = function () {
     };
     this.remote = false;
 
+    this.destroy = function (scene) {
+
+        //
+        //mesh.dispose(); // new
+        //geometry.dispose();
+        //material.dispose();
+        //texture.dispose();
+
+        this.meshBody.traverse(function (node) {
+            scene.remove(node);
+        });
+
+        _.each(this.meshes, function (mesh) {
+            mesh.traverse(function (node) {
+                scene.remove(node);
+            });
+        });
+        scene.remove(this.root);
+    }
+
     // API
 
     this.enableShadows = function (enable) {

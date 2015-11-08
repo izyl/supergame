@@ -3,9 +3,9 @@ var Game = require("game/game");
 var GameService = function () {
     var game;
 
-    this.getGame = function () {
+    this.getGame = function ($scope) {
         if (!game) {
-            game = new Game();
+            game = new Game($scope);
         }
         return game;
     };

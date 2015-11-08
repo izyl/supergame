@@ -11,8 +11,11 @@ var _ = require("lodash");
 // reseau
 var socket = require('socket.io-client')();
 
-var Game = function () {
+var Game = function ($scope) {
     var $container;
+
+    // game controller angular scope for allowing feedback to angular views
+    var $scope = $scope;
 
     // set the scene size
     var WIDTH = 1000, HEIGHT = 600;
@@ -180,7 +183,8 @@ var Game = function () {
         socket.emit('new player');
 
         socket.on('server:start game', function (player) {
-            addPlayer(player)
+            $scope.$emit('toast', "Let's get started : " + player.name);
+            addPlayer(player);
             restore();
         });
 
@@ -191,28 +195,25 @@ var Game = function () {
             });
         });
 
-        socket.on('server:new player', function (player) {
-            console.log("new player : ", player);
+        socket.on('server:new player', function (remotePlayer) {
+            console.log("new player : ", remotePlayer);
+            $scope.$emit('toast', "New palyer : " + remotePlayer.name);
             players.push(createCharacter(player));
         });
 
-        socket.on('server:remove player', function (id) {
+        socket.on('server:remove player', function (remotePlayer) {
 
-            console.log("server:remove player : ", id);
+            $scope.$emit('toast', "Player disconnected : " + remotePlayer.name);
+            console.log("server:remove player : ", remotePlayer);
             console.log("players :", players);
-            var player = _.find(players, function (player) {
-                return player == id;
+            var disconnectedRemotePlayer = _.find(players, {id: remotePlayer.id});
+
+            console.log("removing player : ", disconnectedRemotePlayer);
+            disconnectedRemotePlayer.destroy(scene);
+            players = _.filter(players, function (player) {
+
+                return player.id != remotePlayer.id;
             });
-
-            console.log("removing player : ", player);
-            //player.remove();
-            //scene.remove( mesh );
-            //
-            //mesh.dispose(); // new
-            //geometry.dispose();
-            //material.dispose();
-            //texture.dispose();
-
         });
 
         socket.on('server:player move', function (delta, remotePlayer) {

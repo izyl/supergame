@@ -1,6 +1,8 @@
 /* App Module */
 require("app.css");
 require("bootstrap/dist/css/bootstrap.css");
+require("toastr/build/toastr.css");
+
 var bootstrap = require('bootstrap');
 var angular = require('angular');
 var lodash = require('lodash');
