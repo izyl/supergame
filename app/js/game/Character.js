@@ -39,6 +39,7 @@ Character = function () {
     this.pendingControls = [];
 
     this.remote = false;
+    this.needServerUpdate = false;
 
     /*************************
      * 3D part
@@ -474,16 +475,20 @@ Character = function () {
             this.frontblock = false;
         }
 
+        if(!wasOnObject && this.isOnObject){
+            this.needServerUpdate = true;
+        }
+
     }
 
     this.checkControls = function () {
 
-        var needServerUpdate = false;
+        if (this.remote) return false;
 
-        if (this.remote) return needServerUpdate;
+        var needServerUpdate = this.needServerUpdate;
 
         // if the user send inputs or if he just stopped but not when he is not doing anything
-        if (_.includes(this.controls, true) || !_.isEqual(this.lastControl, this.controls)) {
+        if (needServerUpdate || _.includes(this.controls, true) || !_.isEqual(this.lastControl, this.controls)) {
 
             //console.log(this.controls);
             this.controls.timestamp = Date.now();

@@ -277,6 +277,7 @@ var Game = function ($scope) {
 
         if (map) {
 
+            character.update(delta, map.children);
             if (character.checkControls()) {
 
                 //console.log("client: sending new infos to server");
@@ -284,8 +285,9 @@ var Game = function ($scope) {
                     controls: character.controls,
                     position: character.root.position
                 });
+                character.needServerUpdate = false;
             }
-            character.update(delta, map.children);
+
 
             _.each(players, function (player) {
                 player.update(delta);
