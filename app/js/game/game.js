@@ -7,6 +7,7 @@ require("game/Character");
 require("game/shaders/Sky");
 var KeyboardControls = require("game/controls/PlayerControls");
 var _ = require("lodash");
+var Stats = require("stats.js");
 
 // reseau
 var socket = require('socket.io-client')();
@@ -43,6 +44,7 @@ var Game = function ($scope) {
     var map;
     var character;
     var players = [];
+    var stats = null;
 
     init();
 
@@ -104,6 +106,10 @@ var Game = function ($scope) {
         };
 
         var character = new Character();
+        character.onLoadComplete = function () {
+            console.log("complete");
+            character.root.position.y = 10;
+        };
         character.id = player.id;
         character.name = player.name;
         character.remote = player.remote;
@@ -116,7 +122,11 @@ var Game = function ($scope) {
         character.enableShadows(true);
         character.setWeapon(0);
         character.setSkin(0);
+
+
+        character.falling = true;
         scene.add(character.root);
+
 
         return character;
     };
@@ -229,6 +239,41 @@ var Game = function ($scope) {
         });
     }
 
+
+    function initStats() {
+        var $stats;
+
+        // 0: fps, 1: ms, 2: mb
+        $scope.$on("toggle stats", function (event, btn) {
+
+            var mode = btn.value;
+
+            if (stats == null) {
+                stats = new Stats();
+                $stats = $(stats.domElement);
+                $stats.css("display", "table");
+                stats.setMode(-1);
+                $(".stats-container").append($stats);
+
+            }
+            var monitor = $stats.children().eq(+mode);
+            if(monitor.css("display") == "table-cell"){
+                monitor.css("display", "none");
+            } else {
+                monitor.css("display", "table-cell");
+
+                var destination = $(btn).offset();
+                monitor.css({top: destination.top, left: destination.left});
+            }
+
+            if ($stats.children().find(":hidden").length == 3) {
+                $(".stats-container").remove($stats);
+                stats = null;
+                $stats = null;
+            }
+        });
+    }
+
     function init() {
 
 
@@ -237,6 +282,7 @@ var Game = function ($scope) {
         addMap();
         addLigth();
         initNetwork();
+        initStats();
 
         animate();
         //stats = new Stats();
@@ -244,9 +290,16 @@ var Game = function ($scope) {
     };
 
     function animate() {
-        requestAnimationFrame(animate);
+
+        if (stats)
+            stats.begin();
         render();
         update();
+        if (stats)
+            stats.end();
+
+        requestAnimationFrame(animate);
+
     };
 
     function render() {
@@ -254,7 +307,7 @@ var Game = function ($scope) {
 
         // Attempt to update as many times as possible to get to our nextGameTick 'timeslot'
         // However, we only can update up to 10 times per frame
-        while ((new Date).getTime() > nextGameTick && loops < max_frame_skip) {
+        while (Date.now() > nextGameTick && loops < max_frame_skip) {
             update();
             nextGameTick += skip_ticks;
             loops++;
@@ -265,7 +318,7 @@ var Game = function ($scope) {
          * far ahead of our current update that we start running updates extremely fast
          */
         if (loops === max_frame_skip) {
-            nextGameTick = (new Date).getTime();
+            nextGameTick = Date.now();
         }
 
         renderer.render(scene, camera);

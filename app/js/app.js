@@ -1,7 +1,7 @@
 /* App Module */
-require("app.css");
 require("bootstrap/dist/css/bootstrap.css");
 require("toastr/build/toastr.css");
+require("app.css");
 
 var bootstrap = require('bootstrap');
 var angular = require('angular');
@@ -48,4 +48,4 @@ var app = angular.module('jambonsVsZombies', ['ngRoute', 'ngAnimate'])
     })
     .controller('GameCtrl', ['$scope', 'GameService', GameCtrl])
     .controller('ChatCtrl', ['$scope', ChatCtrl])
-    .controller('NavCtrl', ['$scope', '$location', '$http', NavCtrl]);
+    .controller('NavCtrl', ['$scope', '$location', '$http', '$rootScope', NavCtrl]);

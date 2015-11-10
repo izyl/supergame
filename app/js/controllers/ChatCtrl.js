@@ -8,9 +8,16 @@ var ChatCtrl = function ($scope) {
     $scope.items = [];
     $scope.showChat = false;
 
+    $scope.$on("show chat", function () {
+        $scope.showChat = true;
+    });
+
+    $scope.$on("hide chat", function () {
+        $scope.showChat = false;
+    });
+
     $(document).keydown(function (event) {
 
-        console.log("id", id);
         if (event.keyCode === 13)
             $scope.showChat = true;
 
@@ -39,7 +46,7 @@ var ChatCtrl = function ($scope) {
     socket.on('server:chat message', function (msg) {
         $scope.items.push(msg);
         console.log(msg);
-        toastr.success(msg.author + " : " + msg.text );
+        toastr.success(msg.author + " : " + msg.text);
         $scope.$apply();
     });
 };

@@ -1,6 +1,7 @@
 var _ = require('lodash');
+var $ = require("jQuery");
 
-var NavCtrl = function ($scope, $location, $http) {
+var NavCtrl = function ($scope, $location, $http, $rootScope) {
 
     var current;
 
@@ -22,6 +23,20 @@ var NavCtrl = function ($scope, $location, $http) {
         current = item;
         current.active = 'active';
     };
+    // 0: fps, 1: ms, 2: mb
+    $scope.toggleStats = function ($event) {
+        console.log( $event.target.value);
+        $rootScope.$broadcast("toggle stats", $event.target);
+    };
+
+    $scope.showChat = function () {
+
+        $broadcast("show chat");
+    }
+    $scope.hideChat = function () {
+        $broadcast("hide chat");
+    }
+
 };
 
 module.exports = NavCtrl;

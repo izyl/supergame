@@ -12,7 +12,7 @@
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
 
                 <li ng-repeat="item in items" class="{{item.active}}">
@@ -20,14 +20,26 @@
                             class="sr-only">(current)</span></a>
                 </li>
             </ul>
+
+            <div class="nav navbar-nav stats-container"></div>
+
             <form class="navbar-form navbar-right">
+
+
                 <div class="form-group">
+
                     <input type="text" class="form-control input-sm" ng-model="user.name" name="text"
-                           placeholder="Type your name here...">
+                           placeholder="- Your super gamer name -">
                 </div>
+                <button type="submit" class="btn btn-default btn-sm" ng-click="toggleStats($event)" value="0">fps
+                </button>
+                <button type="submit" class="btn btn-default btn-sm" ng-click="toggleStats($event)" value="1">ms
+                </button>
+                <button type="submit" class="btn btn-default btn-sm" ng-click="toggleStats($event)" value="2">mb
+                </button>
                 <button type="submit" class="btn btn-default btn-sm">logoff</button>
             </form>
-            <p class="navbar-text navbar-right">Welcome</p>
+
         </div>
     </div>
 </nav>
