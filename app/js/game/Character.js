@@ -5,8 +5,9 @@ var _ = require("lodash");
 var THREE = require("THREE");
 require("game/loaders/ColladaLoader");
 
-Character = function () {
+Character = function (_scene) {
 
+    var scene = _scene;
     var scope = this;
 
     /************************
@@ -22,12 +23,10 @@ Character = function () {
     this.root = new THREE.Object3D();
     this.verticalVelocity = 9.8 * 500;
 
-    this.falling = false;
     this.jumpHeight = 0;
     this.maxJumpHeight = 2;
 
-    this.isOnObject = true;
-    this.frontblock = false;
+
     this.weapons = [];
 
     this.idleControl = {
@@ -44,7 +43,6 @@ Character = function () {
     this.pendingControls = [];
 
     this.remote = false;
-    this.needServerUpdate = false;
 
     /*************************
      * 3D part
@@ -59,14 +57,18 @@ Character = function () {
     this.skinsBody = [];
     this.skinsWeapon = [];
 
-    this.currentSkin = undefined;
-
     // internals
     this.meshes = [];
     this.animations = {};
     this.loadCounter = 0;
     // collision
-    this.caster = new THREE.Raycaster();
+    this.box3 = new THREE.Box3();
+    this.box3Helper = null;
+    this.lastPositions = [];
+
+    this.grounds = [];
+    this.collisions = [];
+
 
     // internal animation parameters
     this.activeAnimation = null;
@@ -87,7 +89,7 @@ Character = function () {
             });
         });
         scene.remove(this.root);
-    }
+    };
 
     // API
     this.enableShadows = function (enable) {
@@ -115,7 +117,9 @@ Character = function () {
         this.loadCounter = config.weapons.length * 2 + config.skins.length + 1;
 
         var weaponsTextures = [];
-        for (var i = 0; i < config.weapons.length; i++) weaponsTextures[i] = config.weapons[i][1];
+        for (var j = 0; i < config.weapons.length; i++) {
+            weaponsTextures[i] = config.weapons[i][1];
+        }
 
         // SKINS
         this.skinsBody = loadTextures(config.baseUrl + "skins/", config.skins);
@@ -123,16 +127,16 @@ Character = function () {
 
         // BODY
         var loader = new THREE.JSONLoader();
-
         loader.load(config.baseUrl + config.body, function (geo) {
             geo.computeBoundingBox();
-            scope.root.position.y = -scope.scale * geo.boundingBox.min.y + 1;
-
             var mesh = createPart(geo, scope.skinsBody[0]);
             scope.root.add(mesh);
             scope.meshBody = mesh;
             scope.meshes.push(mesh);
+            scope.box3.setFromObject(mesh);
+            scope.box3Helper = new THREE.BoundingBoxHelper(mesh, 0xff00ff);
 
+            scene.add(scope.box3Helper);
             checkLoadingComplete();
         });
 
@@ -215,18 +219,43 @@ Character = function () {
     };
 
     this.update = function (delta, collidables) {
+        scope.box3.setFromObject(scope.meshBody);
+        scope.box3Helper.update();
 
-        if (!this.remote) {
-            if (collidables)
-                this.collisions(collidables);
-        }
+        var all = this.grounds.concat(scope.collisions);
+        _.each(all, function (collidable) {
 
-        this.updateMovementModel(delta);
+            collidable.box3Helper.visible = false;
+        });
+
+        this.updateMovementModel(delta, collidables);
         if (this.animations) {
             this.updateBehaviors(delta);
             this.updateAnimations(delta);
         }
+
+        _.each(this.grounds, function (collidable) {
+            scope.toggleOffBoxHelper(collidable, 0x0000ff);
+        });
+        _.each(scope.collisions, function (collidable) {
+            scope.toggleOffBoxHelper(collidable, 0xff0000);
+        });
     };
+
+    this.toggleOffBoxHelper = function (collidable, hexColor) {
+        if (collidable.box3Helper)
+            collidable.box3Helper.visible = false;
+
+        if (!collidable.box3Helper) {
+            collidable.box3Helper = new THREE.BoundingBoxHelper(collidable, hexColor);
+            scene.add(collidable.box3Helper);
+
+        } else {
+            collidable.box3Helper.material.color.setHex(hexColor);
+            collidable.box3Helper.visible = true;
+        }
+        collidable.box3Helper.update();
+    }
 
     this.updateAnimations = function (delta) {
 
@@ -325,7 +354,7 @@ Character = function () {
         }
     };
 
-    this.updateMovementModel = function (delta) {
+    this.updateMovementModel = function (delta, collidables) {
 
         var controls = this.controls;
         // speed based on controls
@@ -378,58 +407,116 @@ Character = function () {
             this.speed = this.maxSpeed;
         }
 
-        // displacement
 
-        if (!this.frontblock) {
+        // collision verticale box3d
+        console.log("start ground detect with ", collidables.length, " collidables, char at ", scope.root.position.y, " box at ", scope.box3.min.y, " ground ", scope.grounds);
+        var test = _.flatten(_.pluck(collidables, 'children'));
+        var obstacleBox3d = new THREE.Box3();
+        var groundBox;
+        this.grounds = [];
+        this.collisions = [];
+        var orig = this.root.position.clone();
 
-            var forwardDelta = this.speed * delta;
+        // ground detection : we move the char vertically and then we test for ground collision
+        // la zone de contact en dessous de laquelle on considere l'obstacle comme un sol : on peut monter sur une plaque par exemple
+        var acceptedHeight = (scope.box3.max.y - scope.box3.min.y) / 5;
+        var acceptedY = scope.box3.min.y + acceptedHeight;
 
-            this.root.position.x += Math.sin(this.bodyOrientation) * forwardDelta;
-            this.root.position.z += Math.cos(this.bodyOrientation) * forwardDelta;
+        if (_.isEmpty(scope.grounds)) {
+            console.log("falling : ", scope.root.position.y);
+            //console.log("plop");
         }
+
+        // chutte
+        var vDir = -1;
+
+        if ((this.jumpHeight >= this.maxJumpHeight)) {
+            controls.jump = false;
+        }
+
+        // ascension
+        if (controls.jump) {
+            vDir = 1;
+        }
+
+        this.verticalVelocity = 9.8 * delta * vDir;
+        if (vDir == 1) {
+            this.jumpHeight += this.verticalVelocity;
+        }
+
+
+        _.each(test, function (object3d) {
+
+            obstacleBox3d.setFromObject(object3d);
+            if (groundBox && obstacleBox3d.max.y > groundBox.max.y) {
+                //console.log("exclude" + object3d.id);zq
+                return;
+            }
+            var type = null;
+
+            if (scope.box3.isIntersectionBox(obstacleBox3d)) {
+                var inter = scope.box3.intersect(obstacleBox3d);
+
+
+                if (inter.size().y > acceptedHeight || obstacleBox3d.min.y > acceptedY) {
+                    scope.collisions.push(object3d);
+                    type = " is a collision";
+                    //frontTest.push(object3d);
+
+                } else {
+
+                    type = " is a ground";
+
+                    if (_.isEmpty(scope.grounds)) {
+                        scope.grounds.push(object3d);
+                        groundBox = obstacleBox3d.clone();
+
+                    } else if (groundBox.max.y > obstacleBox3d.max.y) {
+                        scope.collisions.push(scope.grounds.pop());
+                        scope.grounds.push(object3d);
+                        groundBox = obstacleBox3d.clone();
+                    }
+                }
+
+                console.log(object3d.id + type);
+
+            } else {
+                //collisionTest.push(object3d);
+                //frontTest.push(object3d);
+            }
+
+
+        });
+
+
+        if (!_.isEmpty(scope.grounds) && vDir == -1) {
+            this.jumpHeight = 0;
+            scope.root.position.setY(orig.y);
+        } else {
+            this.root.translateY(this.verticalVelocity);
+        }
+
 
         // steering
         this.root.rotation.y = this.bodyOrientation;
 
-        if (!this.remote) {
-            this.verticalVelocity = 9.8;
-            this.verticalVelocity = Math.abs(this.verticalVelocity * delta);
+        if (!_.isEmpty(scope.collisions)) {
 
+            console.log(scope.collisions, scope.grounds.length);
 
-            if (this.jumpHeight >= this.maxJumpHeight) {
-                this.falling = true;
-            }
+            //var y = orig.y;
+            //scope.root.position.y = y;
+            //scope.root.position.copy(this.lastPositions[0]);
+            //scope.root.position.setY(orig.y);
+        } else {
 
-            if (controls.jump) {
+            var forwardDelta = this.speed * delta;
+            this.root.position.x += Math.sin(this.bodyOrientation) * forwardDelta;
+            this.root.position.z += Math.cos(this.bodyOrientation) * forwardDelta;
 
-                // le joueur tombe mais n'a pas lache le bouton...
-                if (!this.falling) {
-                    this.isOnObject = false;
-                }
-
-            } else if (!this.isOnObject) { // le joueur tombe
-                this.falling = true;
-
-            } else { // le joueur est au sol
-
-                this.falling = false;
-                this.jumpHeight = 0;
-            }
-
-            if (this.falling) {
-                this.verticalVelocity = this.verticalVelocity * -1;
-            }
-
-            if (this.jump || !this.isOnObject) {
-
-                this.root.translateY(this.verticalVelocity);
-                this.jumpHeight += this.verticalVelocity;
-            }
-
-            if (this.isOnObject === true) {
-                this.verticalVelocity = Math.max(0, this.verticalVelocity);
-            }
+            // horizontal
         }
+
 
     };
 
@@ -467,62 +554,23 @@ Character = function () {
         if (scope.loadCounter === 0)    scope.onLoadComplete();
     }
 
-    this.collisions = function (collidables) {
-
-        if (!this.meshBody) return;
-
-
-        var wasOnObject = this.isOnObject;
-        var wasBlockedFront = this.frontblock;
-
-        // collision bot
-        var originPoint = this.root.position.clone();
-        var ray = new THREE.Vector3(0, -1, 0);
-        this.caster.set(originPoint, ray);
-        var test = _.pluck(collidables, 'children[0]');
-        var collisions = this.caster.intersectObjects(test);
-        if (!_.isEmpty(collisions) && collisions[0].distance < 1) {
-            this.isOnObject = true;
-        } else {
-            this.isOnObject = false;
-        }
-
-        if (!wasOnObject && this.isOnObject) {
-            this.needServerUpdate = true;
-        }
-
-        // collision front
-        var matrix = new THREE.Matrix4();
-        matrix.extractRotation(this.root.matrix);
-        ray = new THREE.Vector3(0, 0, 1);
-        ray.applyMatrix4(matrix);
-        this.caster.set(originPoint, ray);
-        collisions = this.caster.intersectObjects(test);
-        if (!_.isEmpty(collisions) && collisions[0].distance < 1) {
-            this.frontblock = true;
-        } else {
-            this.frontblock = false;
-        }
-    }
-
     this.checkControls = function () {
 
         if (this.remote) return false;
 
-        var needServerUpdate = this.needServerUpdate;
+        var update = false;
 
         // if the user send inputs or if he just stopped but not when he is not doing anything
-        if (needServerUpdate || _.includes(this.controls, true) || !_.isEqual(this.lastControl, this.controls)) {
+        if (_.includes(this.controls, true) || !_.isEqual(this.lastControl, this.controls)) {
 
             //console.log(this.controls);
             this.controls.timestamp = Date.now();
             this.pendingControls.push(this.lastControl);
-            needServerUpdate = true;
+            update = true;
         }
 
         this.lastControl = _.clone(this.controls);
-
-        return needServerUpdate;
+        return update;
     }
 
 };

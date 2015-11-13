@@ -5,6 +5,7 @@ require("game/Gyroscope");
 require("game/controls/OrbitControls");
 require("game/Character");
 require("game/shaders/Sky");
+var Minimap = require("game/Minimap");
 var KeyboardControls = require("game/controls/PlayerControls");
 var _ = require("lodash");
 var Stats = require("stats.js");
@@ -13,10 +14,9 @@ var Stats = require("stats.js");
 var socket = require('socket.io-client')();
 
 var Game = function ($scope) {
-    var $container;
-
     // game controller angular scope for allowing feedback to angular views
     var $scope = $scope;
+    var $container = $("#game-container");
 
     // set the scene size
     var WIDTH = 1000, HEIGHT = 600;
@@ -29,12 +29,6 @@ var Game = function ($scope) {
     var renderer;
     var clock;
 
-    var nextGameTick = (new Date).getTime();
-    var fps = 30;
-    var max_frame_skip = 10;
-    var skip_ticks = 1000 / fps;
-
-
     var camera;
     var scene;
     var loader;
@@ -42,6 +36,8 @@ var Game = function ($scope) {
 
     var light;
     var map;
+    var minimap;
+
     var character;
     var players = [];
     var stats = null;
@@ -105,41 +101,44 @@ var Game = function ($scope) {
             }
         };
 
-        var character = new Character();
-        character.onLoadComplete = function () {
+        var _character = new Character(scene);
+        _character.loadParts(stickmanCfg);
+        _character.onLoadComplete = function () {
             console.log("complete");
-            character.root.position.y = 10;
+            _character.root.position.y = 15;
+            _character.root.position.x = 3;
+            _character.box3.setFromObject(_character.root);
+
+            _character.id = player.id;
+            _character.name = player.name;
+            _character.remote = player.remote;
+            _character.scale = 3;
+            _character.enableShadows(true);
+            _character.setWeapon(0);
+            _character.setSkin(0);
+            scene.add(_character.root);
+
+            if (!_character.remote) {
+
+                _character.controls = new KeyboardControls(_character);
+                var gyro = new THREE.Gyroscope();
+                gyro.position.set(0, 1, 0);
+                gyro.add(camera);
+                _character.root.add(gyro);
+                character = _character;
+
+            } else {
+                players.push(_character);
+            }
         };
-        character.id = player.id;
-        character.name = player.name;
-        character.remote = player.remote;
-        if (character.remote) {
-            character.verticalVelocity = 0;
-        }
-
-        character.scale = 3;
-        character.loadParts(stickmanCfg);
-        character.enableShadows(true);
-        character.setWeapon(0);
-        character.setSkin(0);
 
 
-        character.falling = true;
-        scene.add(character.root);
-
-
-        return character;
     };
 
     function addPlayer(player) {
 
-        character = createCharacter(player);
-        character.controls = new KeyboardControls(character);
-        var gyro = new THREE.Gyroscope();
-        gyro.position.set(0, 1, 0);
-        gyro.add(camera);
-        character.root.add(gyro);
-
+        player.remote = false;
+        createCharacter(player);
     };
 
     function initColladaLoader() {
@@ -156,7 +155,7 @@ var Game = function ($scope) {
             //clearAlpha: 1,
             clearColor: 0xccdddd
         });
-
+        renderer.autoClear = false;
         renderer.gammaInput = true;
         renderer.gammaOutput = true;
 
@@ -167,6 +166,7 @@ var Game = function ($scope) {
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 40000);
         camera.position.set(0, 20, 20);
         scene.add(camera);
+
         cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
         cameraControls.zoomSpeed = 1.2;
         //cameraControls.noRotate = true;
@@ -182,11 +182,11 @@ var Game = function ($scope) {
             camera.updateProjectionMatrix();
             cameraControls.handleResize();
         });
+
+        minimap = new Minimap($container);
     };
 
     function restore() {
-        var $container = $("#game-container");
-
         $container.append(renderer.domElement);
         renderer.setSize($container.width(), $container.height());
     };
@@ -196,6 +196,7 @@ var Game = function ($scope) {
         socket.on('server:start game', function (player) {
             $scope.$emit('toast', "Let's get started : " + player.name);
             $scope.$emit('player name', player.name);
+            player.remote = false;
             addPlayer(player);
             restore();
         });
@@ -203,7 +204,7 @@ var Game = function ($scope) {
         socket.on('server:player list', function (newPlayers) {
             _.each(newPlayers, function (player) {
                 player.remote = true;
-                players.push(createCharacter(player));
+                createCharacter(player);
             });
         });
 
@@ -230,9 +231,9 @@ var Game = function ($scope) {
         });
 
         socket.on('server:player move', function (delta, remotePlayer) {
-            console.log("server:player move", delta, remotePlayer);
+            //console.log("server:player move", delta, remotePlayer);
             var remotePlayerLocalInstance = _.find(players, {id: remotePlayer.id});
-            console.log("server:player move", remotePlayerLocalInstance);
+            //console.log("server:player move", remotePlayerLocalInstance);
 
             if (remotePlayerLocalInstance)
                 remotePlayerLocalInstance.updateData(remotePlayer);
@@ -257,7 +258,7 @@ var Game = function ($scope) {
 
             }
             var monitor = $stats.children().eq(+mode);
-            if(monitor.css("display") == "table-cell"){
+            if (monitor.css("display") == "table-cell") {
                 monitor.css("display", "none");
             } else {
                 monitor.css("display", "table-cell");
@@ -293,8 +294,9 @@ var Game = function ($scope) {
 
         if (stats)
             stats.begin();
-        render();
+
         update();
+        renderer.render(scene, camera);
         if (stats)
             stats.end();
 
@@ -302,50 +304,42 @@ var Game = function ($scope) {
 
     };
 
-    function render() {
-        loops = 0;
-
-        // Attempt to update as many times as possible to get to our nextGameTick 'timeslot'
-        // However, we only can update up to 10 times per frame
-        while (Date.now() > nextGameTick && loops < max_frame_skip) {
-            update();
-            nextGameTick += skip_ticks;
-            loops++;
-        }
-
-        /*
-         * If we fall really far behind in updates then we need to set nextGameTick to the current time to prevent the situation where nextGameTick is so
-         * far ahead of our current update that we start running updates extremely fast
-         */
-        if (loops === max_frame_skip) {
-            nextGameTick = Date.now();
-        }
-
-        renderer.render(scene, camera);
-    }
-
     function update() {
         var delta = clock.getDelta();
 
         if (map) {
 
-            character.update(delta, map.children);
-            if (character.checkControls()) {
+            if (character) {
+                character.update(delta, map.children);
+                if (character.checkControls()) {
 
-                var snapshot = {
-                    controls: character.lastControl,
-                    position: character.root.position
-                };
-                console.log("client: sending new infos to server :", snapshot);
-                socket.emit('client:player controls', delta, snapshot);
-                character.needServerUpdate = false;
+                    var snapshot = {
+                        controls: character.lastControl,
+                        position: character.root.position
+                    };
+                    //console.log("client: sending new infos to server :", snapshot);
+                    socket.emit('client:player controls', delta, snapshot);
+                }
             }
-
 
             _.each(players, function (player) {
                 player.update(delta);
             });
         }
+
+        if (minimap) {
+
+            var positions = _.pluck(players, "root.position");
+            if (character) {
+                var centerPosition = character.root.position;
+                centerPosition.center = true;
+                positions.push(centerPosition);
+            }
+            positions = _.compact(positions);
+            minimap.update(positions);
+        }
+
+
         cameraControls.update(delta);
     };
 

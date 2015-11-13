@@ -5,16 +5,16 @@ SUPERGAME
 
 ###Web site : angular
 - [x] chat
-- [] enable/disable fps
+- [x] enable/disable fps
 - [] enable/disable map
 - [] Menus bootstrap retractables avec chat et preferences
 - [] Preferences clavier souris
-- [] in game chat (default key enter) : partie + team + private + global
+- [-] in game chat (default key enter) : partie + team + private + global
 
 ###Jeu
 
 ####Server : express, socket.io
-- [] stockage de la partie joueurs, attribution d'id
+- [x] stockage de la partie, joueurs, attribution d'id
 - [] routage des informations par paquets
 - [] reconciliation
 - [] vie/mort/respawn
@@ -25,7 +25,7 @@ SUPERGAME
 
 ####Client : three.js, socket.io-client
 - [] level manager : load unload scene
-- [] stats
+- [x] stats
 - [] vue carte map
 - [] prediction
 - [x] collision 
@@ -37,7 +37,7 @@ SUPERGAME
 - [] path finding	
 - [] bonus
 - [] login
-- [] remote player local instance destroy sur leave
+- [x] remote player local instance destroy sur leave
 	
 ####Infographie : Blender
 - [x] courir
@@ -45,10 +45,9 @@ SUPERGAME
 - [] accroupir
 - [] frapper
 - [] changements d'anim en douceur
-- [] des textures
+- [-] des textures
 	
 	
 ##references
 	[exporting from blender to threejs](https://quaintproject.wordpress.com/2014/01/25/exporting-from-blender-to-web-gl-using-collada-and-three-js-part-2)
-	[shaders and shadermaterial](http://blog.2pha.com/experimenting-threejs-shaders-and-shadermaterial)
 	[game networking fast paced multiplayer](http://gabrielgambetta.com/fast_paced_multiplayer.html)
