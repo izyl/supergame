@@ -214,6 +214,9 @@ Character = function (_scene) {
 
         this.controls = remotePlayer.controls;
         this.root.position.copy (remotePlayer.position);
+
+        this.ground = remotePlayer.ground;
+        this.collision = remotePlayer.collision;
     };
 
     this.update = function (delta, collidables) {
@@ -426,7 +429,7 @@ Character = function (_scene) {
         this.verticalMove(delta, collidables);
 
         // horizontal move
-        if (_.isEmpty(scope.collisions) || this.remote) {
+        if (!this.remote && _.isEmpty(scope.collisions) || this.remote && !this.collision) {
             var forwardDelta = this.speed * delta;
             this.root.position.x += Math.sin(this.bodyOrientation) * forwardDelta;
             this.root.position.z += Math.cos(this.bodyOrientation) * forwardDelta;
@@ -486,17 +489,24 @@ Character = function (_scene) {
             }
         }
 
-        // !remote + remote
         this.verticalVelocity = 9.8 * delta * vDir;
         if (vDir == 1) {
             this.jumpHeight += this.verticalVelocity;
         }
 
-        if (!_.isEmpty(scope.grounds) && vDir == -1) {
-            this.jumpHeight = 0;
-            scope.root.position.setY(orig.y);
+        if(!this.remote) {
+
+            if (!_.isEmpty(scope.grounds) && vDir == -1) {
+                this.jumpHeight = 0;
+                scope.root.position.setY(orig.y);
+            } else {
+                this.root.translateY(this.verticalVelocity);
+            }
         } else {
-            this.root.translateY(this.verticalVelocity);
+
+            if(!scope.ground){
+                vDir = 0;
+            }
         }
     }
 
@@ -541,13 +551,21 @@ Character = function (_scene) {
         var update = false;
 
         // if the user send inputs or if he just stopped but not when he is not doing anything
-        if (_.includes(this.controls, true) || !_.isEqual(this.lastControl, this.controls)) {
+        if (_.includes(this.controls, true)
+            || !_.isEqual(this.lastControl, this.controls)
+            || !_.isEqual(this.ground, !_.isEmpty(this.grounds))
+            || !_.isEqual(this.collision, !_.isEmpty(this.collisions))
+
+        ) {
 
             //console.log(this.controls);
             this.controls.timestamp = Date.now();
             this.pendingControls.push(this.lastControl);
             update = true;
         }
+
+        this.ground = !_.isEmpty(this.grounds);
+        this.collision = !_.isEmpty(this.collisions);
 
         this.lastControl = _.clone(this.controls);
         return update;
