@@ -48,13 +48,6 @@ var Game = function ($scope) {
         loader.load('models/map/map_2.dae', function (collada) {
             map = collada.scene;
             map.position.set(0, 0, 0);
-
-            collada.scene.traverse(function (node) {
-                if (node.material) {
-                    node.material.side = THREE.DoubleSide;
-                }
-            });
-
             scene.add(map);
 
             var skyShader = THREE.ShaderTypes['sky'];
