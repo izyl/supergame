@@ -23,10 +23,6 @@ body {
     display: flex;
 }
 
-#game-canvas {
-    flex: 1;
-}
-
 #navigation {
     margin-bottom: 0;
 }

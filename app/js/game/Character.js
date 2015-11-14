@@ -418,65 +418,75 @@ Character = function (_scene) {
         }
 
 
-        // collision verticale box3d
-        //console.log("start ground detect with ", collidables.length, " collidables, char at ", scope.root.position.y, " box at ", scope.box3, " ground ", scope.grounds);
-        var test = _.flatten(_.pluck(collidables, 'children'));
-        var obstacleBox3d = new THREE.Box3();
-        this.grounds = [];
-        this.collisions = [];
-        var orig = this.root.position.clone();
+        // steering
+        this.root.rotation.y = this.bodyOrientation;
 
-        // ground detection : we move the char vertically and then we test for ground collision
-        // la zone de contact en dessous de laquelle on considere l'obstacle comme un sol : on peut monter sur une plaque par exemple
-        var acceptedHeight = (scope.box3.max.y - scope.box3.min.y) / 5;
-        var acceptedY = scope.box3.min.y + acceptedHeight;
+        // vertical move
 
-        _.each(test, function (object3d) {
+        this.verticalMove(delta, collidables);
 
-            scope.box3 = new THREE.Box3().setFromObject(scope.meshBody);
-            obstacleBox3d.setFromObject(object3d);
-            var type = null;
+        // horizontal move
+        if (_.isEmpty(scope.collisions) || this.remote) {
+            var forwardDelta = this.speed * delta;
+            this.root.position.x += Math.sin(this.bodyOrientation) * forwardDelta;
+            this.root.position.z += Math.cos(this.bodyOrientation) * forwardDelta;
+        }
+    };
 
-            if (scope.box3.isIntersectionBox(obstacleBox3d)) {
-                var inter = scope.box3.intersect(obstacleBox3d);
+    this.verticalMove = function (delta, collidables) {
+        var controls = this.controls;
+
+        if (collidables) {
+            // console.log("start ground detect with ", collidables.length, " collidables, char at ", scope.root.position.y, " box at ", scope.box3, " ground ", scope.grounds);
+            // collision verticale box3d
+            // remote only
+            var test = _.flatten(_.pluck(collidables, 'children'));
+            var obstacleBox3d = new THREE.Box3();
+            this.grounds = [];
+            this.collisions = [];
+            var orig = this.root.position.clone();
+
+            // ground detection : we move the char vertically and then we test for ground collision
+            // la zone de contact en dessous de laquelle on considere l'obstacle comme un sol : on peut monter sur une plaque par exemple
+            var acceptedHeight = (scope.box3.max.y - scope.box3.min.y) / 5;
+            var acceptedY = scope.box3.min.y + acceptedHeight;
+
+            _.each(test, function (object3d) {
+
+                    scope.box3 = new THREE.Box3().setFromObject(scope.meshBody);
+                    obstacleBox3d.setFromObject(object3d);
+                    var type = null;
+
+                    if (scope.box3.isIntersectionBox(obstacleBox3d)) {
+                        var inter = scope.box3.intersect(obstacleBox3d);
 
 
-                if (inter.size().y > acceptedHeight || obstacleBox3d.min.y > acceptedY) {
-                    scope.collisions.push(object3d);
-                    //type = " is a collision";
-                    //frontTest.push(object3d);
+                        if (inter.size().y > acceptedHeight || obstacleBox3d.min.y > acceptedY) {
+                            // collision
+                            scope.collisions.push(object3d);
 
-                } else {
-
-                    //type = " is a ground";
-                    scope.grounds.push(object3d);
+                        } else {
+                            // ground
+                            scope.grounds.push(object3d);
+                        }
+                    }
                 }
+            );
 
-                //console.log(object3d.id + type);
+            // chutte
+            var vDir = -1;
 
-            } else {
-                //collisionTest.push(object3d);
-                //frontTest.push(object3d);
+            if ((this.jumpHeight >= this.maxJumpHeight)) {
+                controls.jump = false;
             }
-        });
 
-        if (_.isEmpty(scope.grounds)) {
-            //console.log("falling : ", scope.root.position.y);
-            //console.log("plop");
+            // ascension
+            if (controls.jump) {
+                vDir = 1;
+            }
         }
 
-        // chutte
-        var vDir = -1;
-
-        if ((this.jumpHeight >= this.maxJumpHeight)) {
-            controls.jump = false;
-        }
-
-        // ascension
-        if (controls.jump) {
-            vDir = 1;
-        }
-
+        // !remote + remote
         this.verticalVelocity = 9.8 * delta * vDir;
         if (vDir == 1) {
             this.jumpHeight += this.verticalVelocity;
@@ -488,33 +498,10 @@ Character = function (_scene) {
         } else {
             this.root.translateY(this.verticalVelocity);
         }
+    }
 
 
-        // steering
-        this.root.rotation.y = this.bodyOrientation;
-
-        if (!_.isEmpty(scope.collisions)) {
-
-            //console.log(scope.collisions, scope.grounds.length);
-
-            //var y = orig.y;
-            //scope.root.position.y = y;
-            //scope.root.position.copy(this.lastPositions[0]);
-            //scope.root.position.setY(orig.y);
-        } else {
-
-            var forwardDelta = this.speed * delta;
-            this.root.position.x += Math.sin(this.bodyOrientation) * forwardDelta;
-            this.root.position.z += Math.cos(this.bodyOrientation) * forwardDelta;
-
-            // horizontal
-        }
-
-
-    };
-
-// internal helpers
-
+    // internal helpers
     function loadTextures(baseUrl, textureUrls) {
         var mapping = THREE.UVMapping;
         var textures = [];
@@ -565,8 +552,6 @@ Character = function (_scene) {
         this.lastControl = _.clone(this.controls);
         return update;
     }
-
-}
-;
+};
 
 module.exports = Character;
