@@ -6,6 +6,7 @@ var MiniMap = function ($container) {
 
     var scene = new THREE.Scene();
     var markers = [];
+    var visible;
 
     var renderer = new THREE.WebGLRenderer({
         alpha: true
@@ -13,8 +14,11 @@ var MiniMap = function ($container) {
     renderer.setSize(120, 120);
     renderer.setClearColor(0xffffff, 0);
 
-    $(".minimap").append(renderer.domElement);
-    $(".minimap").css({
+    var $minimap = $container;
+
+    $minimap.hide();
+    $minimap.append(renderer.domElement);
+    $minimap.css({
         left: "50px",
         top: "70px",
         width: "120px",
@@ -29,8 +33,13 @@ var MiniMap = function ($container) {
     cam.position.set(0, 0, 50);
 
     function animate() {
+
+
         requestAnimationFrame(animate);
-        renderer.render(scene, cam);
+
+        if ($minimap.is(":visible"))
+            renderer.render(scene, cam);
+
     }
 
     animate();
@@ -74,13 +83,14 @@ var MiniMap = function ($container) {
         return circle;
     };
 
-    function remove() {
+    var toggle = function () {
 
+        $(".minimap").toggle();
     };
 
     return {
         update: update,
-        remove: remove
+        toggle: toggle
     }
 };
 

@@ -175,8 +175,6 @@ var Game = function ($scope) {
             camera.updateProjectionMatrix();
             cameraControls.handleResize();
         });
-
-        minimap = new Minimap($container);
     };
 
     function restore() {
@@ -234,6 +232,39 @@ var Game = function ($scope) {
     }
 
 
+    function initPrefs() {
+
+        initStats();
+        initCollisions();
+        initMinimap();
+
+    }
+
+    function initMinimap() {
+
+        $scope.$on("toggle minimap", function () {
+
+            console.log("tmap");
+
+            if (!minimap) {
+                minimap = new Minimap($(".minimap"));
+            }
+
+            minimap.toggle();
+
+        });
+    }
+
+    function initCollisions() {
+        // 0: fps, 1: ms, 2: mb
+        $scope.$on("toggle collisions", function () {
+
+            if (character)
+                character.showCollisions = !character.showCollisions;
+        });
+
+    }
+
     function initStats() {
         var $stats;
 
@@ -276,7 +307,7 @@ var Game = function ($scope) {
         addMap();
         addLigth();
         initNetwork();
-        initStats();
+        initPrefs();
 
         animate();
         //stats = new Stats();

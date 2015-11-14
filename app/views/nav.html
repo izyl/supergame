@@ -30,9 +30,12 @@
                            placeholder="- Your super gamer name -">
                 </div>
 
-                <button type="submit" class="btn btn-default btn-sm" ng-click="showMap()">map</button>
+                <button type="submit" class="btn btn-default btn-sm" ng-click="toggleMap()">map</button>
 
                 <div class="btn-group">
+
+                    <button type="submit" class="btn btn-default btn-sm" ng-click="toggleCollisions()">collisions</button>
+
                     <button type="submit" class="btn btn-default btn-sm" ng-click="toggleStats($event)" value="0">fps
                     </button>
                     <button type="submit" class="btn btn-default btn-sm" ng-click="toggleStats($event)" value="1">ms

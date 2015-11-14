@@ -61,14 +61,14 @@ Character = function (_scene) {
     this.meshes = [];
     this.animations = {};
     this.loadCounter = 0;
+
+
     // collision
     this.box3 = new THREE.Box3();
     this.box3Helper = null;
-    this.lastPositions = [];
-
+    this.showCollisions = false;
     this.grounds = [];
     this.collisions = [];
-
 
     // internal animation parameters
     this.activeAnimation = null;
@@ -134,9 +134,7 @@ Character = function (_scene) {
             scope.meshBody = mesh;
             scope.meshes.push(mesh);
             scope.box3.setFromObject(mesh);
-            scope.box3Helper = new THREE.BoundingBoxHelper(mesh, 0xff00ff);
 
-            scene.add(scope.box3Helper);
             checkLoadingComplete();
         });
 
@@ -220,12 +218,10 @@ Character = function (_scene) {
 
     this.update = function (delta, collidables) {
         scope.box3.setFromObject(scope.meshBody);
-        scope.box3Helper.update();
 
-        var all = this.grounds.concat(scope.collisions);
+        var all = this.grounds.concat(scope.collisions).concat(scope.meshBody);
         _.each(all, function (collidable) {
-
-            collidable.box3Helper.visible = false;
+            scope.toggleBoxHelper(collidable, null);
         });
 
         this.updateMovementModel(delta, collidables);
@@ -234,27 +230,41 @@ Character = function (_scene) {
             this.updateAnimations(delta);
         }
 
-        _.each(this.grounds, function (collidable) {
-            scope.toggleOffBoxHelper(collidable, 0x0000ff);
-        });
-        _.each(scope.collisions, function (collidable) {
-            scope.toggleOffBoxHelper(collidable, 0xff0000);
-        });
+        if (scope.showCollisions) {
+
+            scope.toggleBoxHelper(scope.meshBody, 0x00ff00);
+
+            _.each(this.grounds, function (collidable) {
+                scope.toggleBoxHelper(collidable, 0x0000ff);
+            });
+            _.each(scope.collisions, function (collidable) {
+                scope.toggleBoxHelper(collidable, 0xff0000);
+            });
+        }
     };
 
-    this.toggleOffBoxHelper = function (collidable, hexColor) {
-        if (collidable.box3Helper)
-            collidable.box3Helper.visible = false;
+    this.toggleBoxHelper = function (collidable, hexColor) {
 
-        if (!collidable.box3Helper) {
-            collidable.box3Helper = new THREE.BoundingBoxHelper(collidable, hexColor);
-            scene.add(collidable.box3Helper);
+        if (hexColor == null) {
+            if (collidable.box3Helper) {
+                collidable.box3Helper.visible = false;
+            }
 
         } else {
-            collidable.box3Helper.material.color.setHex(hexColor);
-            collidable.box3Helper.visible = true;
+
+            if (this.showCollisions) {
+
+                if (!collidable.box3Helper) {
+                    collidable.box3Helper = new THREE.BoundingBoxHelper(collidable, hexColor);
+                    scene.add(collidable.box3Helper);
+                }
+
+                collidable.box3Helper.visible = true;
+
+                collidable.box3Helper.material.color.setHex(hexColor);
+                collidable.box3Helper.update();
+            }
         }
-        collidable.box3Helper.update();
     };
 
     this.updateAnimations = function (delta) {
@@ -409,7 +419,7 @@ Character = function (_scene) {
 
 
         // collision verticale box3d
-        console.log("start ground detect with ", collidables.length, " collidables, char at ", scope.root.position.y, " box at ", scope.box3, " ground ", scope.grounds);
+        //console.log("start ground detect with ", collidables.length, " collidables, char at ", scope.root.position.y, " box at ", scope.box3, " ground ", scope.grounds);
         var test = _.flatten(_.pluck(collidables, 'children'));
         var obstacleBox3d = new THREE.Box3();
         this.grounds = [];
@@ -433,16 +443,16 @@ Character = function (_scene) {
 
                 if (inter.size().y > acceptedHeight || obstacleBox3d.min.y > acceptedY) {
                     scope.collisions.push(object3d);
-                    type = " is a collision";
+                    //type = " is a collision";
                     //frontTest.push(object3d);
 
                 } else {
 
-                    type = " is a ground";
+                    //type = " is a ground";
                     scope.grounds.push(object3d);
                 }
 
-                console.log(object3d.id + type);
+                //console.log(object3d.id + type);
 
             } else {
                 //collisionTest.push(object3d);
@@ -451,7 +461,7 @@ Character = function (_scene) {
         });
 
         if (_.isEmpty(scope.grounds)) {
-            console.log("falling : ", scope.root.position.y);
+            //console.log("falling : ", scope.root.position.y);
             //console.log("plop");
         }
 
@@ -485,7 +495,7 @@ Character = function (_scene) {
 
         if (!_.isEmpty(scope.collisions)) {
 
-            console.log(scope.collisions, scope.grounds.length);
+            //console.log(scope.collisions, scope.grounds.length);
 
             //var y = orig.y;
             //scope.root.position.y = y;
@@ -503,7 +513,7 @@ Character = function (_scene) {
 
     };
 
-    // internal helpers
+// internal helpers
 
     function loadTextures(baseUrl, textureUrls) {
         var mapping = THREE.UVMapping;
@@ -556,6 +566,7 @@ Character = function (_scene) {
         return update;
     }
 
-};
+}
+;
 
 module.exports = Character;

@@ -29,13 +29,21 @@ var NavCtrl = function ($scope, $location, $http, $rootScope) {
         $rootScope.$broadcast("toggle stats", $event.target);
     };
 
-    $scope.showChat = function () {
+    $scope.toggleMap = function ($event) {
+        $rootScope.$broadcast("toggle minimap");
+    };
 
+    $scope.toggleCollisions = function ($event) {
+        $rootScope.$broadcast("toggle collisions");
+    };
+
+    $scope.showChat = function () {
         $broadcast("show chat");
-    }
+    };
+
     $scope.hideChat = function () {
         $broadcast("hide chat");
-    }
+    };
 
 };
 
