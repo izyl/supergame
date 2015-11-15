@@ -89,7 +89,7 @@ var MiniMap = function ($container) {
         //var mesh = new THREE.Mesh(geometry, material);
 
 
-        var geometry = new THREE.SphereGeometry( 5, 32, 32 );
+        var geometry = new THREE.SphereGeometry( 2 );
         var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
         var mesh = new THREE.Mesh( geometry, material );
 

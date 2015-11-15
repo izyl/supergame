@@ -1,7 +1,7 @@
 var _ = require("lodash");
 var THREE = require("THREE");
 
-var KeyboardControl = function (character) {
+var PlayerControl = function () {
 
     var controls = {
         up: false,
@@ -12,7 +12,6 @@ var KeyboardControl = function (character) {
         jump: false,
         attack: false
     };
-    character.controls = controls;
 
     document.addEventListener('keydown', onKeyDown, false);
     document.addEventListener('keyup', onKeyUp, false);
@@ -118,4 +117,4 @@ var KeyboardControl = function (character) {
     return controls;
 };
 
-module.exports = KeyboardControl;
+module.exports = PlayerControl;
