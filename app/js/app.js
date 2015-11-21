@@ -12,7 +12,6 @@ var animate = require('angular-animate');
 var ChatCtrl = require('controllers/ChatCtrl');
 var GameCtrl = require('controllers/GameCtrl');
 var NavCtrl = require('controllers/NavCtrl');
-var GameService = require('services/GameService');
 
 var app = angular.module('jambonsVsZombies', ['ngRoute', 'ngAnimate'])
 
@@ -33,7 +32,6 @@ var app = angular.module('jambonsVsZombies', ['ngRoute', 'ngAnimate'])
         }
     ])
     // services
-    .service("GameService", GameService)
 
     //Load controllers
     .controller('RootCtrl', []).run(function ($rootScope) {
@@ -46,6 +44,6 @@ var app = angular.module('jambonsVsZombies', ['ngRoute', 'ngAnimate'])
         });
 
     })
-    .controller('GameCtrl', ['$scope', 'GameService', GameCtrl])
+    .controller('GameCtrl', ['$scope', GameCtrl])
     .controller('ChatCtrl', ['$scope', ChatCtrl])
     .controller('NavCtrl', ['$scope', '$location', '$http', '$rootScope', NavCtrl]);

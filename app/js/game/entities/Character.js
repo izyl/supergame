@@ -476,7 +476,7 @@ var Character = function (cfg) {
 
             // ground detection : we move the char vertically and then we test for ground collision
             // la zone de contact en dessous de laquelle on considere l'obstacle comme un sol : on peut monter sur une plaque par exemple
-            var acceptedHeight = (box3.max.y - box3.min.y) / 5;
+            var acceptedHeight = (box3.max.y - box3.min.y) / 3;
             var acceptedY = box3.min.y + acceptedHeight;
 
             _.each(test, function (object3d) {

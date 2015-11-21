@@ -25,7 +25,6 @@ var NavCtrl = function ($scope, $location, $http, $rootScope) {
     };
     // 0: fps, 1: ms, 2: mb
     $scope.toggleStats = function ($event) {
-        console.log( $event.target.value);
         $rootScope.$broadcast("toggle stats", $event.target);
     };
 
@@ -38,11 +37,11 @@ var NavCtrl = function ($scope, $location, $http, $rootScope) {
     };
 
     $scope.showChat = function () {
-        $broadcast("show chat");
+        $rootScope.$broadcast("show chat");
     };
 
     $scope.hideChat = function () {
-        $broadcast("hide chat");
+        $rootScope.$broadcast("hide chat");
     };
 
 };
