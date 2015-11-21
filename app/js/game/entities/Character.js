@@ -597,6 +597,10 @@ var Character = function (cfg) {
         return update;
     }
 
+    function toggleCollisions(){
+        showCollisions = !showCollisions;
+    }
+
 
     return {
         onLoadComplete: onLoadComplete,
@@ -604,7 +608,7 @@ var Character = function (cfg) {
         root: root,
         remote: remote,
         controls: controls,
-        showCollisions: showCollisions,
+        toggleCollisions: toggleCollisions,
         lastControl: lastControl,
         ground: ground,
         collision: collision,
