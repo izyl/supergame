@@ -18,7 +18,6 @@ var EntityService = function () {
         return new Promise(function (resolve, reject) {
 
             var onLoadComplete = function () {
-                console.log("complete");
                 scene.add(character);
                 resolve(character.root);
             };
@@ -63,7 +62,6 @@ var EntityService = function () {
             player.remote = false;
 
             var onLoadComplete = function () {
-                console.log("complete");
                 var gyro = new THREE.Gyroscope();
                 gyro.position.set(0, 1, 0);
                 gyro.add(camera);

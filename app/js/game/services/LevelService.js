@@ -25,25 +25,22 @@ var LevelService = function () {
                     map = collada.scene;
                     map.position.set(0, 0, 0);
                     scene.add(map);
-
+                    console.log(map);
                     map.traverse(function (obj) {
 
                             if (obj instanceof THREE.Mesh) {
 
-                                obj.castShadow = true;
-
                                 if (obj.material && obj.material.name == "grass") {
                                     obj.material.map.repeat.set(8, 8);
                                     obj.material.map.wrapS = obj.material.map.wrapT = THREE.RepeatWrapping;
-                                    obj.castShadow = false;
                                 }
 
-
-                                obj.receiveShadow = true;
+                                //obj.castShadow = true;
+                                //obj.receiveShadow = true;
                             }
 
-                            if(obj instanceof THREE.Light) {
-                                obj.castShadow = true;
+                            if (obj instanceof THREE.Light) {
+                                //obj.castShadow = true;
                             }
                         }
                     );
@@ -77,7 +74,7 @@ var LevelService = function () {
 
     function addLigth() {
 
-        var ambientLight = new THREE.AmbientLight(0x333333, 0.04);
+        var ambientLight = new THREE.AmbientLight(0x888888, 0.04);
         scene.add(ambientLight);
         //
         //var spotLight = new THREE.SpotLight(0xffffff);

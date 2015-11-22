@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.76.0 commit date:2015-10-11, commit time:06:55, hash:48f7dd6</authoring_tool>
     </contributor>
-    <created>2015-11-22T14:50:11</created>
-    <modified>2015-11-22T14:50:11</modified>
+    <created>2015-11-22T18:54:05</created>
+    <modified>2015-11-22T18:54:05</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -3209,6 +3209,72 @@
         </polylist>
       </mesh>
     </geometry>
+    <geometry id="Bonus_001-mesh" name="Bonus.001">
+      <mesh>
+        <source id="Bonus_001-mesh-positions">
+          <float_array id="Bonus_001-mesh-positions-array" count="24">-1 -1 -1 -1 -1 1 -1 1 -1 -1 1 1 1 -1 -1 1 -1 1 1 1 -1 1 1 1</float_array>
+          <technique_common>
+            <accessor source="#Bonus_001-mesh-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Bonus_001-mesh-normals">
+          <float_array id="Bonus_001-mesh-normals-array" count="18">-1 0 0 0 1 0 1 0 0 0 -1 0 0 0 -1 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#Bonus_001-mesh-normals-array" count="6" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Bonus_001-mesh-vertices">
+          <input semantic="POSITION" source="#Bonus_001-mesh-positions"/>
+        </vertices>
+        <polylist material="Gold-material" count="12">
+          <input semantic="VERTEX" source="#Bonus_001-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Bonus_001-mesh-normals" offset="1"/>
+          <vcount>3 3 3 3 3 3 3 3 3 3 3 3 </vcount>
+          <p>3 0 2 0 0 0 7 1 6 1 2 1 5 2 4 2 6 2 1 3 0 3 4 3 2 4 6 4 4 4 7 5 3 5 1 5 1 0 3 0 0 0 3 1 7 1 2 1 7 2 5 2 6 2 5 3 1 3 4 3 0 4 2 4 4 4 5 5 7 5 1 5</p>
+        </polylist>
+      </mesh>
+    </geometry>
+    <geometry id="Bonus_002-mesh" name="Bonus.002">
+      <mesh>
+        <source id="Bonus_002-mesh-positions">
+          <float_array id="Bonus_002-mesh-positions-array" count="24">-1 -1 -1 -1 -1 1 -1 1 -1 -1 1 1 1 -1 -1 1 -1 1 1 1 -1 1 1 1</float_array>
+          <technique_common>
+            <accessor source="#Bonus_002-mesh-positions-array" count="8" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Bonus_002-mesh-normals">
+          <float_array id="Bonus_002-mesh-normals-array" count="18">-1 0 0 0 1 0 1 0 0 0 -1 0 0 0 -1 0 0 1</float_array>
+          <technique_common>
+            <accessor source="#Bonus_002-mesh-normals-array" count="6" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Bonus_002-mesh-vertices">
+          <input semantic="POSITION" source="#Bonus_002-mesh-positions"/>
+        </vertices>
+        <polylist material="Gold-material" count="12">
+          <input semantic="VERTEX" source="#Bonus_002-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Bonus_002-mesh-normals" offset="1"/>
+          <vcount>3 3 3 3 3 3 3 3 3 3 3 3 </vcount>
+          <p>3 0 2 0 0 0 7 1 6 1 2 1 5 2 4 2 6 2 1 3 0 3 4 3 2 4 6 4 4 4 7 5 3 5 1 5 1 0 3 0 0 0 3 1 7 1 2 1 7 2 5 2 6 2 5 3 1 3 4 3 0 4 2 4 4 4 5 5 7 5 1 5</p>
+        </polylist>
+      </mesh>
+    </geometry>
   </library_geometries>
   <library_controllers/>
   <library_visual_scenes>
@@ -3848,9 +3914,9 @@
         <matrix sid="transform">0.3822627 0 0 -7.438376 0 0.3822627 0 -1.988215 0 0 0.3822627 0.1562871 0 0 0 1</matrix>
         <instance_geometry url="#Cube_049-mesh" name="Cube_049"/>
       </node>
-      <node id="Bonus" name="Bonus" type="NODE">
+      <node id="Bonus-scale" name="Bonus-scale" type="NODE">
         <matrix sid="transform">0.3822627 0 0 10.95989 0 0.3822627 0 -0.437963 0 0 0.3822627 0.03654695 0 0 0 1</matrix>
-        <instance_geometry url="#Bonus-mesh" name="Bonus">
+        <instance_geometry url="#Bonus-mesh" name="Bonus-scale">
           <bind_material>
             <technique_common>
               <instance_material symbol="Gold-material" target="#Gold-material"/>
@@ -3861,6 +3927,26 @@
       <node id="Point" name="Point" type="NODE">
         <matrix sid="transform">1 0 0 -14.18588 0 1 0 -6.715333 0 0 1 36.57395 0 0 0 1</matrix>
         <instance_light url="#Point-light"/>
+      </node>
+      <node id="Bonus-speed" name="Bonus-speed" type="NODE">
+        <matrix sid="transform">0.3822627 0 0 10.95989 0 0.3822627 0 17.71831 0 0 0.3822627 0.03654695 0 0 0 1</matrix>
+        <instance_geometry url="#Bonus_001-mesh" name="Bonus-speed">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Gold-material" target="#Gold-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="Bonus-jump" name="Bonus-jump" type="NODE">
+        <matrix sid="transform">0.3822627 0 0 10.95989 0 0.3822627 0 -16.48421 0 0 0.3822627 -0.1131115 0 0 0 1</matrix>
+        <instance_geometry url="#Bonus_002-mesh" name="Bonus-jump">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Gold-material" target="#Gold-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
       </node>
     </visual_scene>
   </library_visual_scenes>

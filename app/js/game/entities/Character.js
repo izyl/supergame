@@ -470,18 +470,17 @@ var Character = function (cfg) {
             // console.log("start ground detect with ", collidables.length, " collidables, char at ", root.position.y, " box at ", box3, " ground ", grounds);
             // collision verticale box3d
             // remote only
-            var test = _.flatten(_.pluck(collidables, 'children'));
+
             var obstacleBox3d = new THREE.Box3();
             grounds = [];
             collisions = [];
-
 
             // ground detection : we move the char vertically and then we test for ground collision
             // la zone de contact en dessous de laquelle on considere l'obstacle comme un sol : on peut monter sur une plaque par exemple
             var acceptedHeight = (box3.max.y - box3.min.y) / 3;
             var acceptedY = box3.min.y + acceptedHeight;
 
-            _.each(test, function (object3d) {
+            _.each(collidables, function (object3d) {
 
                     box3 = new THREE.Box3().setFromObject(root);
                     obstacleBox3d.setFromObject(object3d);
@@ -498,9 +497,22 @@ var Character = function (cfg) {
                             grounds.push(object3d);
                         }
 
-                        if(object3d.parent.name == "Bonus"){
+                        if (object3d.parent.name == "Bonus-scale") {
                             console.log("player got bonus : ", object3d);
-                            meshBody.scale.set(2,2,2);
+                            meshBody.scale.set(2.5, 2.5, 2.5);
+                            object3d.visible = false;
+
+                        } else if (object3d.parent.name == "Bonus-speed") {
+                            console.log("player got bonus : ", object3d);
+                            walkSpeed *= 2.5;
+                            crouchSpeed *= 2.5;
+                            speed *= 2.5;
+                            animationFPS = 60;
+                            object3d.visible = false;
+
+                        } else if (object3d.parent.name == "Bonus-jump") {
+                            console.log("player got bonus : ", object3d);
+                            maxJumpHeight *= 2.5;
                             object3d.visible = false;
                         }
                     }
@@ -518,9 +530,9 @@ var Character = function (cfg) {
             if (controls.jump) {
                 vDir = 1;
             }
-        }
+         }
 
-        verticalVelocity = 9.8 * delta * vDir;
+        verticalVelocity = delta * vDir * 4.5 * maxJumpHeight;
         if (vDir == 1) {
             jumpHeight += verticalVelocity;
         }
@@ -603,7 +615,7 @@ var Character = function (cfg) {
         return update;
     }
 
-    function toggleCollisions(){
+    function toggleCollisions() {
         showCollisions = !showCollisions;
     }
 
