@@ -67,6 +67,7 @@ var Character = function (cfg) {
     // internals
     var meshes = [];
     var animations = {};
+    var blendCounter = 0;
     var loadCounter = 0;
 
 
@@ -459,6 +460,7 @@ var Character = function (cfg) {
             root.position.x += Math.sin(bodyOrientation) * forwardDelta;
             root.position.z += Math.cos(bodyOrientation) * forwardDelta;
         }
+
     };
 
     function verticalMove(delta, collidables) {
@@ -481,13 +483,11 @@ var Character = function (cfg) {
 
             _.each(test, function (object3d) {
 
-                    box3 = new THREE.Box3().setFromObject(meshBody);
+                    box3 = new THREE.Box3().setFromObject(root);
                     obstacleBox3d.setFromObject(object3d);
-                    var type = null;
 
-                    if (box3.isIntersectionBox(obstacleBox3d)) {
+                    if (object3d.visible && box3.isIntersectionBox(obstacleBox3d)) {
                         var inter = box3.intersect(obstacleBox3d);
-
 
                         if (inter.size().y > acceptedHeight || obstacleBox3d.min.y > acceptedY) {
                             // collision
@@ -496,6 +496,12 @@ var Character = function (cfg) {
                         } else {
                             // ground
                             grounds.push(object3d);
+                        }
+
+                        if(object3d.parent.name == "Bonus"){
+                            console.log("player got bonus : ", object3d);
+                            meshBody.scale.set(2,2,2);
+                            object3d.visible = false;
                         }
                     }
                 }

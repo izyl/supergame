@@ -36,11 +36,15 @@ var LevelService = function () {
                                     obj.material.map.repeat.set(8, 8);
                                     obj.material.map.wrapS = obj.material.map.wrapT = THREE.RepeatWrapping;
                                     obj.castShadow = false;
-                                    obj.receiveShadow = true;
                                 }
+
+
+                                obj.receiveShadow = true;
                             }
 
-
+                            if(obj instanceof THREE.Light) {
+                                obj.castShadow = true;
+                            }
                         }
                     );
 
@@ -75,27 +79,17 @@ var LevelService = function () {
 
         var ambientLight = new THREE.AmbientLight(0x333333, 0.04);
         scene.add(ambientLight);
-
-        //var light = new THREE.DirectionalLight(0xffffff, 1.0);
-        //light.position.set(0, 50, 10);
-        //light.castShadow = true;
-        //scene.add(light);
-
-        var spotLight = new THREE.SpotLight( 0xffffff );
-        spotLight.position.set( 50, 500, 50 );
-
-        spotLight.castShadow = true;
-
-        spotLight.shadowMapWidth = 1024;
-        spotLight.shadowMapHeight = 1024;
-
-        spotLight.shadowCameraNear = 500;
-        spotLight.shadowCameraFar = 4000;
-        spotLight.shadowCameraFov = 30;
-
-        spotLight.shadowCameraFov = 10;
-
-        scene.add( spotLight );
+        //
+        //var spotLight = new THREE.SpotLight(0xffffff);
+        //spotLight.position.set(20, 500, 20);
+        //spotLight.shadowMapWidth = 2048;
+        //spotLight.shadowMapHeight = 2048;
+        //spotLight.shadowCameraNear = 500;
+        //spotLight.shadowCameraFar = 4000;
+        //spotLight.shadowCameraFov = 4;
+        //spotLight.castShadow = true;
+        //
+        //scene.add(spotLight);
 
     };
 

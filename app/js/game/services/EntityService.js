@@ -35,7 +35,7 @@ var EntityService = function () {
             id: player.id,
             name: player.name,
             remote: player.remote,
-            scale: .5,
+            scale: 1,
             position: new THREE.Vector3(0, 15, 3),
             controls: new PlayerControls(),
 
