@@ -68,7 +68,7 @@ var MinimapService = function (game) {
 
             var positions = _.pluck(players, "root.position");
             if (player) {
-                var centerPosition = player.root.position.clone();
+                var centerPosition = player.getRoot().position.clone();
                 centerPosition.center = true;
                 positions.push(centerPosition);
             }

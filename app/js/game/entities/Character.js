@@ -7,8 +7,8 @@ require("game/loaders/ColladaLoader");
 var _ = require("lodash");
 
 var Character = function (cfg) {
-
-
+    console.log(" CFG ", cfg);
+    console.log("current id ", id);
     /************************
      * Model part
      * **************************/
@@ -28,7 +28,7 @@ var Character = function (cfg) {
     var maxJumpHeight = 2;
     var weapons = [];
 
-    var idleControl = {
+    var idleControls = {
         up: false,
         down: false,
         left: false,
@@ -37,15 +37,15 @@ var Character = function (cfg) {
         jump: false,
         attack: false
     };
-    var controls = _.clone(idleControl);
-    var lastControl = null;
+    var controls = null;
+    var lastControl = _.clone(idleControls);
 
     /**
      * for remote processing
      */
     var pendingControls = [];
-    var ground;
-    var collision;
+    var onGround;
+    var onCollision;
     var remote = false;
 
     /*************************
@@ -82,16 +82,17 @@ var Character = function (cfg) {
     var oldAnimation = null;
 
     var callback;
-    var onLoadComplete = function () {
+
+    function onLoadComplete() {
 
         if (callback) {
             callback();
         }
-    };
+    }
 
-    var setConfig = function (cfg) {
+    function init(cfg) {
         scene = cfg.scene;
-        controls = cfg.controls;
+        controls = cfg.controls || _.clone(idleControls);
         id = cfg.id;
         name = cfg.name;
         remote = cfg.remote;
@@ -106,11 +107,10 @@ var Character = function (cfg) {
         animations = cfg.animations;
         callback = cfg.callback;
 
-
         loadParts();
     }
 
-    var destroy = function (scene) {
+    function destroy(scene) {
 
         meshBody.traverse(function (node) {
             scene.remove(node);
@@ -122,7 +122,7 @@ var Character = function (cfg) {
             });
         });
         scene.remove(root);
-    };
+    }
 
     // API
     function enableShadows(enable) {
@@ -131,7 +131,7 @@ var Character = function (cfg) {
             meshes[i].castShadow = enable;
             meshes[i].receiveShadow = enable;
         }
-    };
+    }
 
     function setVisible(enable) {
 
@@ -139,7 +139,7 @@ var Character = function (cfg) {
             meshes[i].visible = enable;
             meshes[i].visible = enable;
         }
-    };
+    }
 
 
     function loadParts() {
@@ -191,19 +191,19 @@ var Character = function (cfg) {
         for (var i = 0; i < weapons.length; i++) {
             loader.load(baseUrl + weapons[i][0], generateCallback(i, weapons[i][0]));
         }
-    };
+    }
 
     function setPlaybackRate(rate) {
         if (meshBody) meshBody.duration = meshBody.baseDuration / rate;
         if (meshWeapon) meshWeapon.duration = meshWeapon.baseDuration / rate;
-    };
+    }
 
     function setSkin(index) {
         if (meshBody && meshBody.material.wireframe === false) {
             meshBody.material.map = skinsBody[index];
             currentSkin = index;
         }
-    };
+    }
 
     function setWeapon(index) {
 
@@ -218,7 +218,7 @@ var Character = function (cfg) {
                 meshWeapon.setAnimationTime(activeAnimation, meshBody.getAnimationTime(activeAnimation));
             }
         }
-    };
+    }
 
     function setAnimation(animationName) {
 
@@ -244,10 +244,16 @@ var Character = function (cfg) {
     function updateData(remotePlayer) {
 
         controls = remotePlayer.controls;
+        console.log("updateData", remotePlayer);
         root.position.copy (remotePlayer.position);
 
-        ground = remotePlayer.ground;
-        collision = remotePlayer.collision;
+        onGround = remotePlayer.onGround;
+        onCollision = remotePlayer.onCollision;
+        if (scale != remotePlayer.scale) {
+            scale = remotePlayer.scale;
+            meshBody.scale.set(scale, scale, scale);
+        }
+
     };
 
     function update(delta, collidables) {
@@ -455,7 +461,7 @@ var Character = function (cfg) {
         verticalMove(delta, collidables);
 
         // horizontal move
-        if (!remote && _.isEmpty(collisions) || remote && !collision) {
+        if (!remote && _.isEmpty(collisions) || remote && !onCollision) {
             var forwardDelta = speed * delta;
             root.position.x += Math.sin(bodyOrientation) * forwardDelta;
             root.position.z += Math.cos(bodyOrientation) * forwardDelta;
@@ -499,7 +505,8 @@ var Character = function (cfg) {
 
                         if (object3d.parent.name == "Bonus-scale") {
                             console.log("player got bonus : ", object3d);
-                            meshBody.scale.set(2.5, 2.5, 2.5);
+                            scale *= 2.5;
+                            meshBody.scale.set(scale, scale, scale);
                             object3d.visible = false;
 
                         } else if (object3d.parent.name == "Bonus-speed") {
@@ -530,7 +537,7 @@ var Character = function (cfg) {
             if (controls.jump) {
                 vDir = 1;
             }
-         }
+        }
 
         verticalVelocity = delta * vDir * 4.5 * maxJumpHeight;
         if (vDir == 1) {
@@ -547,7 +554,7 @@ var Character = function (cfg) {
             }
         } else {
 
-            if (!ground) {
+            if (!onGround) {
                 vDir = 0;
             }
         }
@@ -597,8 +604,8 @@ var Character = function (cfg) {
         // if the user send inputs or if he just stopped but not when he is not doing anything
         if (_.includes(controls, true)
             || !_.isEqual(lastControl, controls)
-            || !_.isEqual(ground, !_.isEmpty(grounds))
-            || !_.isEqual(collision, !_.isEmpty(collisions))
+            || !_.isEqual(onGround, !_.isEmpty(grounds))
+            || !_.isEqual(onCollision, !_.isEmpty(collisions))
 
         ) {
 
@@ -608,8 +615,8 @@ var Character = function (cfg) {
             update = true;
         }
 
-        ground = !_.isEmpty(grounds);
-        collision = !_.isEmpty(collisions);
+        onGround = !_.isEmpty(grounds);
+        onCollision = !_.isEmpty(collisions);
 
         lastControl = _.clone(controls);
         return update;
@@ -619,21 +626,56 @@ var Character = function (cfg) {
         showCollisions = !showCollisions;
     }
 
+    function getLastControl() {
+        return lastControl;
+    }
 
+    function isOnGround() {
+        return onGround;
+    }
+
+    function isOnCollision() {
+        return onCollision;
+    }
+
+    function getRoot() {
+        return root;
+    }
+
+    function getId() {
+        return id;
+    }
+
+    function isRemote() {
+        return remote;
+    }
+
+    function getControls() {
+        return controls;
+    }
+
+    function getScale() {
+        return scale;
+    }
+
+    init(cfg);
     return {
+        init: init,
+        getId: getId,
         onLoadComplete: onLoadComplete,
-        setConfig: setConfig,
-        root: root,
-        remote: remote,
-        controls: controls,
+        getRoot: getRoot,
+        isRemote: isRemote,
+        getControls: getControls,
         toggleCollisions: toggleCollisions,
-        lastControl: lastControl,
-        ground: ground,
-        collision: collision,
+        getLastControl: getLastControl,
+        isOnGround: isOnGround,
+        isOnCollision: isOnCollision,
+        getScale: getScale,
 
         update: update,
         updateData: updateData,
-        checkControls: checkControls
+        checkControls: checkControls,
+        destroy: destroy
     }
 };
 

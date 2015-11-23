@@ -14,19 +14,18 @@ var EntityService = function () {
     }
 
     function createPlayer(player) {
+        player.remote = true;
 
         return new Promise(function (resolve, reject) {
-
             var onLoadComplete = function () {
-                scene.add(character);
-                resolve(character.root);
+                scene.add(character.getRoot());
+                resolve(character);
             };
-            var character = new Character();
-            buildPlayer(player, character, onLoadComplete);
+            var character = buildPlayer(player, onLoadComplete);
         });
     }
 
-    function buildPlayer(player, character, onLoadComplete) {
+    function buildPlayer(player, onLoadComplete) {
 
         var cfg = {
             baseUrl: "models/character/",
@@ -36,7 +35,6 @@ var EntityService = function () {
             remote: player.remote,
             scale: 1,
             position: new THREE.Vector3(0, 15, 3),
-            controls: new PlayerControls(),
 
             body: "stickman.json",
             skins: ["stickman.png"],
@@ -53,34 +51,36 @@ var EntityService = function () {
             callback: onLoadComplete
         };
 
-        character.setConfig(cfg);
+        if (!player.remote) {
+            cfg.controls = new PlayerControls();
+        }
+
+        return new Character(cfg);
     }
 
     function createCharacter(player) {
+        player.remote = false;
 
         return new Promise(function (resolve, reject) {
-            player.remote = false;
-
             var onLoadComplete = function () {
                 var gyro = new THREE.Gyroscope();
                 gyro.position.set(0, 1, 0);
                 gyro.add(camera);
-                character.root.add(gyro);
-                scene.add(character.root);
+                character.getRoot().add(gyro);
+                scene.add(character.getRoot());
 
                 resolve(character);
             };
 
-            var character = new Character();
-            buildPlayer(player, character, onLoadComplete);
+            var character = buildPlayer(player, onLoadComplete);
         });
     }
 
     return {
         createPlayer: createPlayer,
         createCharacter: createCharacter,
-        init : init
+        init: init
     };
 }
 
-module.exports =  new EntityService();
+module.exports = new EntityService();

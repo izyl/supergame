@@ -20,6 +20,8 @@ var Game = function () {
     var cameraControls;
 
     var map;
+    var objects = [];
+    var meshes = [];
     var stats = null;
 
     var module = {
@@ -38,6 +40,16 @@ var Game = function () {
         levelService.init(module);
         levelService.loadMap("models/map/map_3.dae").then(function (_map) {
             map = _map;
+
+            map.traverse(function(node){
+
+                if(node instanceof  THREE.Mesh){
+                    meshes.push(node);
+                } else {
+                    objects.push(node);
+                }
+            });
+
         });
     }
 
@@ -46,12 +58,12 @@ var Game = function () {
         module.scene = new THREE.Scene();
         renderer = new THREE.WebGLRenderer({
             antialias: true,
-            //clearAlpha: 1,
+            clearAlpha: 1,
             //clearColor: 0xccdddd
         });
         //renderer.autoClear = false;
-        //renderer.gammaInput = true;
-        //renderer.gammaOutput = true;
+        renderer.gammaInput = true;
+        renderer.gammaOutput = true;
 
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.cullFace = THREE.CullFaceBack;
@@ -137,18 +149,9 @@ var Game = function () {
         if (map) {
 
             if (module.character) {
-                module.character.update(delta, map.children);
+                module.character.update(delta, meshes);
                 if (module.character.checkControls()) {
-
-                    var snapshot = {
-                        controls: module.character.lastControl,
-                        position: module.character.root.position,
-                        ground: module.character.ground,
-                        collision: module.character.collision
-
-                    };
-                    networkService.sendControls(delta, snapshot);
-
+                    networkService.sendControls(delta);
                 }
             }
 

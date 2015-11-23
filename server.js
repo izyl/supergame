@@ -42,25 +42,14 @@ io.on('connection', function (socket) {
      *  position
      * }
      */
-    socket.on('client:player controls', function (delta, data) {
+    socket.on('client:player controls', function (delta, snapshot) {
 
         //console.log('player move: ', socket.id, data);
         var player = game.getPlayer(socket.id);
         //console.log('player move: ', player);
 
-        var snapshot = {
-            controls: data.controls,
-            position: data.position
-
-        }
-
         player.queue(snapshot);
-
-        socket.broadcast.emit('server:player move', delta, {
-            id: socket.id,
-            controls: snapshot.controls,
-            position: snapshot.position
-        });
+        socket.broadcast.emit('server:player move', delta, snapshot);
     });
 
     socket.on('client:chat message', function (msg) {
