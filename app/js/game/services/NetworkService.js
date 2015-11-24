@@ -31,7 +31,7 @@ var NetworkService = function () {
         });
 
         socket.on('server:new player', function (remotePlayer) {
-            console.log("new player : ", remotePlayer);
+            //console.log("new player : ", remotePlayer);
             $scope.$emit('toast', "New player : " + remotePlayer.name);
             entityService.createPlayer(remotePlayer).then(function (char) {
                 game.players.push(char);
@@ -48,11 +48,10 @@ var NetworkService = function () {
             });
 
             //console.log("removing player : ", disconnectedRemotePlayer);
-            disconnectedRemotePlayer.destroy(game.scene);
             _.remove(game.players, function (player) {
-
-                return player.id != remotePlayer.id;
+                return player.getId() == remotePlayer.id;
             });
+            disconnectedRemotePlayer.destroy(game.scene);
         });
 
         socket.on('server:player move', function (delta, remotePlayer) {
@@ -80,7 +79,7 @@ var NetworkService = function () {
         };
         //console.log("client: sending new infos to server :", snapshot);
         socket.emit('client:player controls', delta, snapshot);
-        console.log(snapshot);
+        //console.log(snapshot);
     }
 
     return {

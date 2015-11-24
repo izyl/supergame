@@ -64,11 +64,14 @@ var MinimapService = function (game) {
         if ($minimap && $minimap.is(":visible")) {
 
             var players = game.players;
-            var player = game.character;
+            var character = game.character;
 
-            var positions = _.pluck(players, "root.position");
-            if (player) {
-                var centerPosition = player.getRoot().position.clone();
+            var positions = [];d
+            _.each(players, function(player){
+                positions.push(player.getRoot().position.clone());
+            });
+            if (character) {
+                var centerPosition = character.getRoot().position.clone();
                 centerPosition.center = true;
                 positions.push(centerPosition);
             }

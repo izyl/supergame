@@ -7,8 +7,6 @@ require("game/loaders/ColladaLoader");
 var _ = require("lodash");
 
 var Character = function (cfg) {
-    console.log(" CFG ", cfg);
-    console.log("current id ", id);
     /************************
      * Model part
      * **************************/
@@ -72,7 +70,7 @@ var Character = function (cfg) {
 
 
     // collision
-    var box3 = new THREE.Box3();
+    var box3 = null;
     var showCollisions = false;
     var grounds = [];
     var collisions = [];
@@ -163,7 +161,7 @@ var Character = function (cfg) {
             root.add(mesh);
             meshBody = mesh;
             meshes.push(mesh);
-            box3.setFromObject(mesh);
+            box3 = new THREE.Box3().setFromObject(root);
             mesh.scale.set(scale, scale, scale);
 
             checkLoadingComplete();
@@ -244,7 +242,7 @@ var Character = function (cfg) {
     function updateData(remotePlayer) {
 
         controls = remotePlayer.controls;
-        console.log("updateData", remotePlayer);
+        //console.log("updateData", remotePlayer);
         root.position.copy (remotePlayer.position);
 
         onGround = remotePlayer.onGround;
@@ -257,7 +255,6 @@ var Character = function (cfg) {
     };
 
     function update(delta, collidables) {
-        box3.setFromObject(meshBody);
 
         var all = grounds.concat(collisions).concat(meshBody);
         _.each(all, function (collidable) {
@@ -483,15 +480,17 @@ var Character = function (cfg) {
 
             // ground detection : we move the char vertically and then we test for ground collision
             // la zone de contact en dessous de laquelle on considere l'obstacle comme un sol : on peut monter sur une plaque par exemple
+            box3 = new THREE.Box3().setFromObject(root);
             var acceptedHeight = (box3.max.y - box3.min.y) / 3;
             var acceptedY = box3.min.y + acceptedHeight;
+
 
             _.each(collidables, function (object3d) {
 
                     box3 = new THREE.Box3().setFromObject(root);
                     obstacleBox3d.setFromObject(object3d);
 
-                    if (object3d.visible && box3.isIntersectionBox(obstacleBox3d)) {
+                    if (object3d.visible && box3.isIntersectionBox(obstacleBox3d) && obstacleBox3d.size().y > 0) {
                         var inter = box3.intersect(obstacleBox3d);
 
                         if (inter.size().y > acceptedHeight || obstacleBox3d.min.y > acceptedY) {
@@ -504,13 +503,13 @@ var Character = function (cfg) {
                         }
 
                         if (object3d.parent.name == "Bonus-scale") {
-                            console.log("player got bonus : ", object3d);
+                            //console.log("player got bonus : ", object3d);
                             scale *= 2.5;
                             meshBody.scale.set(scale, scale, scale);
                             object3d.visible = false;
 
                         } else if (object3d.parent.name == "Bonus-speed") {
-                            console.log("player got bonus : ", object3d);
+                            //console.log("player got bonus : ", object3d);
                             walkSpeed *= 2.5;
                             crouchSpeed *= 2.5;
                             speed *= 2.5;
@@ -518,7 +517,7 @@ var Character = function (cfg) {
                             object3d.visible = false;
 
                         } else if (object3d.parent.name == "Bonus-jump") {
-                            console.log("player got bonus : ", object3d);
+                            //console.log("player got bonus : ", object3d);
                             maxJumpHeight *= 2.5;
                             object3d.visible = false;
                         }
