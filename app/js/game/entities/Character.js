@@ -490,10 +490,10 @@ var Character = function (cfg) {
                     box3 = new THREE.Box3().setFromObject(root);
                     obstacleBox3d.setFromObject(object3d);
 
-                    if (object3d.visible && box3.isIntersectionBox(obstacleBox3d) && obstacleBox3d.size().y > 0) {
+                    if (object3d.visible && box3.isIntersectionBox(obstacleBox3d)) {
                         var inter = box3.intersect(obstacleBox3d);
 
-                        if (inter.size().y > acceptedHeight || obstacleBox3d.min.y > acceptedY) {
+                        if (inter.size().y > acceptedHeight || obstacleBox3d.max.y > acceptedY) {
                             // collision
                             collisions.push(object3d);
 
@@ -547,7 +547,6 @@ var Character = function (cfg) {
 
             if (!_.isEmpty(grounds) && vDir == -1) {
                 jumpHeight = 0;
-                root.position.setY(orig.y);
             } else {
                 root.translateY(verticalVelocity);
             }

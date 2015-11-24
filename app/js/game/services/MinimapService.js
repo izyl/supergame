@@ -66,7 +66,7 @@ var MinimapService = function (game) {
             var players = game.players;
             var character = game.character;
 
-            var positions = [];d
+            var positions = [];
             _.each(players, function(player){
                 positions.push(player.getRoot().position.clone());
             });

@@ -30,11 +30,15 @@
                            placeholder="- Your super gamer name -">
                 </div>
 
-                <button type="submit" class="btn btn-default btn-sm" ng-click="toggleMap()">map</button>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-default btn-sm" ng-click="toggleShadow()">shadow</button>
+                    <button type="submit" class="btn btn-default btn-sm" ng-click="toggleMap()">map</button>
+                </div>
 
                 <div class="btn-group">
 
-                    <button type="submit" class="btn btn-default btn-sm" ng-click="toggleCollisions()">collisions</button>
+                    <button type="submit" class="btn btn-default btn-sm" ng-click="toggleCollisions()">collisions
+                    </button>
 
                     <button type="submit" class="btn btn-default btn-sm" ng-click="toggleStats($event)" value="0">fps
                     </button>
@@ -43,7 +47,7 @@
                     <button type="submit" class="btn btn-default btn-sm" ng-click="toggleStats($event)" value="2">mb
                     </button>
                 </div>
-                <button type="submit" class="btn btn-default btn-sm">logoff</button>
+                <button type="submit" class="btn btn-default btn-sm" ng-click="logoff()">logoff</button>
             </form>
 
         </div>

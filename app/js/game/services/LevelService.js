@@ -6,17 +6,18 @@ require("game/shaders/Sky");
 
 var LevelService = function () {
 
-    var scene;
+    var game;
+    var map;
     var loader;
 
-    function init(game) {
-        scene = game.scene;
+    function init(_game) {
+        game = _game;
         loader = new THREE.ColladaLoader();
         loader.options.convertUpAxis = true;
     }
 
     function loadMap(filePath) {
-        var map;
+
 
         var promise = new Promise(function (resolve, reject) {
 
@@ -24,7 +25,7 @@ var LevelService = function () {
                 loader.load(filePath, function (collada) {
                     map = collada.scene;
                     map.position.set(0, 0, 0);
-                    scene.add(map);
+                    game.scene.add(map);
                     console.log(map);
                     map.traverse(function (obj) {
 
@@ -35,12 +36,19 @@ var LevelService = function () {
                                     obj.material.map.wrapS = obj.material.map.wrapT = THREE.RepeatWrapping;
                                 }
 
-                                //obj.castShadow = true;
-                                //obj.receiveShadow = true;
+                                obj.castShadow = true;
+                                obj.receiveShadow = true;
+                            }
+
+                            if(obj.name.startsWith("Bonus")){
+                                console.log(obj);
+                              //  obj.update();
                             }
 
                             if (obj instanceof THREE.Light) {
                                 //obj.castShadow = true;
+                                //obj.receiveShadow = true;
+                                console.log(obj);
                             }
                         }
                     );
@@ -56,7 +64,7 @@ var LevelService = function () {
                     });
 
                     var sky = new THREE.Mesh(skyGeo, skyMat);
-                    scene.add(sky);
+                    game.scene.add(sky);
 
                     addLigth();
                     resolve(map);
@@ -70,12 +78,31 @@ var LevelService = function () {
 
         return promise;
 
-    };
+    }
+
+    function toggleShadow(){
+        map.traverse(function(obj){
+            if (obj instanceof THREE.Mesh) {
+                obj.castShadow = !obj.castShadow;
+                obj.receiveShadow = !obj.receiveShadow;
+            }
+
+            if(obj instanceof THREE.Light){
+                obj.castShadow = !obj.castShadow;
+            }
+        });
+    }
 
     function addLigth() {
 
         var ambientLight = new THREE.AmbientLight(0x888888, 0.04);
-        scene.add(ambientLight);
+        game.scene.add(ambientLight);
+
+        var light = new THREE.PointLight( 0xffffff, 1, 400 );
+        light.position.set( 20, 100, 20 );
+        light.castShadow = true;
+        game.scene.add( light );
+
         //
         //var spotLight = new THREE.SpotLight(0xffffff);
         //spotLight.position.set(20, 500, 20);
@@ -88,10 +115,11 @@ var LevelService = function () {
         //
         //scene.add(spotLight);
 
-    };
+    }
 
     return {
         loadMap: loadMap,
+        toggleShadow : toggleShadow,
         init: init
     };
 };

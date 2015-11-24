@@ -32,6 +32,10 @@ var NavCtrl = function ($scope, $location, $http, $rootScope) {
         $rootScope.$broadcast("toggle minimap");
     };
 
+    $scope.toggleShadow = function ($event) {
+        $rootScope.$broadcast("toggle shadow");
+    };
+
     $scope.toggleCollisions = function ($event) {
         $rootScope.$broadcast("toggle collisions");
     };
@@ -43,6 +47,12 @@ var NavCtrl = function ($scope, $location, $http, $rootScope) {
     $scope.hideChat = function () {
         $rootScope.$broadcast("hide chat");
     };
+
+    $scope.logoff = function () {
+        $location.path("/")
+        window.location="/";
+    };
+
 
 };
 
