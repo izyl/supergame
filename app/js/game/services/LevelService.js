@@ -29,7 +29,12 @@ var LevelService = function () {
                     console.log(map);
                     map.traverse(function (obj) {
 
-                            if (obj instanceof THREE.Mesh) {
+                            // while we load the map we use the mesh names to identify our blender's objects
+
+                            if (obj instanceof THREE.Light) {
+                                console.log(obj);
+                            }
+                            else if (obj instanceof THREE.Mesh) {
 
                                 if (obj.material && obj.material.name == "grass") {
                                     obj.material.map.repeat.set(8, 8);
@@ -40,16 +45,11 @@ var LevelService = function () {
                                 obj.receiveShadow = true;
                             }
 
-                            if(obj.name.startsWith("Bonus")){
+                            if (obj.name.startsWith("Bonus")) {
                                 console.log(obj);
-                              //  obj.update();
                             }
 
-                            if (obj instanceof THREE.Light) {
-                                //obj.castShadow = true;
-                                //obj.receiveShadow = true;
-                                console.log(obj);
-                            }
+
                         }
                     );
 
@@ -66,7 +66,7 @@ var LevelService = function () {
                     var sky = new THREE.Mesh(skyGeo, skyMat);
                     game.scene.add(sky);
 
-                    addLigth();
+                    //addLigth();
                     resolve(map);
                 });
 
@@ -80,14 +80,14 @@ var LevelService = function () {
 
     }
 
-    function toggleShadow(){
-        map.traverse(function(obj){
+    function toggleShadow() {
+        map.traverse(function (obj) {
             if (obj instanceof THREE.Mesh) {
                 obj.castShadow = !obj.castShadow;
                 obj.receiveShadow = !obj.receiveShadow;
             }
 
-            if(obj instanceof THREE.Light){
+            if (obj instanceof THREE.Light) {
                 obj.castShadow = !obj.castShadow;
             }
         });
@@ -95,13 +95,13 @@ var LevelService = function () {
 
     function addLigth() {
 
-        var ambientLight = new THREE.AmbientLight(0x888888, 0.04);
+        var ambientLight = new THREE.AmbientLight(0x333333, 0.04);
         game.scene.add(ambientLight);
 
-        var light = new THREE.PointLight( 0xffffff, 1, 400 );
-        light.position.set( 20, 100, 20 );
+        var light = new THREE.PointLight(0xffffff, 1, 200, 0);
+        light.position.set(20, 50, 20);
         light.castShadow = true;
-        game.scene.add( light );
+        game.scene.add(light);
 
         //
         //var spotLight = new THREE.SpotLight(0xffffff);
@@ -119,8 +119,9 @@ var LevelService = function () {
 
     return {
         loadMap: loadMap,
-        toggleShadow : toggleShadow,
-        init: init
+        toggleShadow: toggleShadow,
+        init: init,
+        addLigth : addLigth
     };
 };
 

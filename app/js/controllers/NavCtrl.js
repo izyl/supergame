@@ -49,7 +49,7 @@ var NavCtrl = function ($scope, $location, $http, $rootScope) {
     };
 
     $scope.logoff = function () {
-        $location.path("/")
+        // we dont use $location because we really want to reload the page : for now this will clean all game's object instance
         window.location="/";
     };
 

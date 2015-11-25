@@ -282,26 +282,30 @@ var Character = function (cfg) {
 
     function toggleBoxHelper(collidable, hexColor) {
 
-        if (hexColor == null) {
-            if (collidable.box3Helper) {
-                collidable.box3Helper.visible = false;
-            }
+        if(collidable){
 
-        } else {
-
-            if (showCollisions) {
-
-                if (!collidable.box3Helper) {
-                    collidable.box3Helper = new THREE.BoundingBoxHelper(collidable, hexColor);
-                    scene.add(collidable.box3Helper);
+            if (hexColor == null) {
+                if (collidable.box3Helper) {
+                    collidable.box3Helper.visible = false;
                 }
 
-                collidable.box3Helper.visible = true;
+            } else {
 
-                collidable.box3Helper.material.color.setHex(hexColor);
-                collidable.box3Helper.update();
+                if (showCollisions) {
+
+                    if (!collidable.box3Helper) {
+                        collidable.box3Helper = new THREE.BoundingBoxHelper(collidable, hexColor);
+                        scene.add(collidable.box3Helper);
+                    }
+
+                    collidable.box3Helper.visible = true;
+
+                    collidable.box3Helper.material.color.setHex(hexColor);
+                    collidable.box3Helper.update();
+                }
             }
         }
+
     };
 
     function updateAnimations(delta) {

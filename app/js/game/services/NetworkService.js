@@ -1,6 +1,7 @@
 var _ = require("lodash");
 var socket = require('socket.io-client')();
 var entityService = require("game/services/EntityService");
+var levelService = require("game/services/LevelService");
 
 var NetworkService = function () {
 
@@ -17,6 +18,8 @@ var NetworkService = function () {
             $scope.$emit('player name', player.name);
             entityService.createCharacter(player).then(function (char) {
                 game.character = char;
+
+                levelService.addLigth()
             });
 
         });
